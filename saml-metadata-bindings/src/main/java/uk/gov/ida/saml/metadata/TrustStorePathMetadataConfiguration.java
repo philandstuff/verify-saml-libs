@@ -22,6 +22,17 @@ import java.security.KeyStore;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TrustStorePathMetadataConfiguration extends MetadataConfiguration {
 
+    /*
+     * TrustStore configuration is used to do certificate chain validation when loading metadata
+     */
+    @NotNull
+    @Valid
+    private String trustStorePath;
+
+    @NotNull
+    @Valid
+    private String trustStorePassword;
+
     @JsonCreator
     public TrustStorePathMetadataConfiguration(
             @JsonProperty("uri") @JsonAlias({ "url" }) URI uri,
@@ -38,16 +49,6 @@ public class TrustStorePathMetadataConfiguration extends MetadataConfiguration {
         this.trustStorePath = trustStorePath;
         this.trustStorePassword = trustStorePassword;
     }
-    /*
-     * TrustStore configuration is used to do certificate chain validation when loading metadata
-     */
-    @NotNull
-    @Valid
-    private String trustStorePath;
-
-    @NotNull
-    @Valid
-    private String trustStorePassword;
 
     @Override
     public KeyStore getTrustStore() {

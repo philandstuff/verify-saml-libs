@@ -18,7 +18,7 @@ public class JerseyClientMetadataResolver extends AbstractReloadingMetadataResol
 
     @Override
     protected String getMetadataIdentifier() {
-        return "metadata";
+        return metadataUri.toString();
     }
 
     @Override

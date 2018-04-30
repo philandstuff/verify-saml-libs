@@ -28,17 +28,17 @@ import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeBuilder_1_1.
 import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeValueBuilder.*;
 
 @RunWith(OpenSAMLMockitoRunner.class)
-public class MatchingDatasetUnmarshallerTest {
+public class VerifyMatchingDatasetUnmarshallerTest {
 
-    private MatchingDatasetUnmarshaller unmarshaller;
+    private VerifyMatchingDatasetUnmarshaller unmarshaller;
 
     @Before
     public void setUp() {
-        this.unmarshaller = new MatchingDatasetUnmarshaller(new AddressFactory());
+        this.unmarshaller = new VerifyMatchingDatasetUnmarshaller(new AddressFactory());
     }
 
     @Test
-    public void transform_shouldTransformAnAssertionIntoAMatchingDataset_1_1() throws Exception {
+    public void transform_shouldTransformAnAssertionIntoAMatchingDataset_1_1() {
         Attribute firstname = aPersonName_1_1().addValue(aPersonNameValue().withValue("Bob").withFrom(DateTime.parse("2000-03-5")).withTo(DateTime.parse("2001-02-6")).withVerified(true).build()).buildAsFirstname();
         Attribute middlenames = aPersonName_1_1().addValue(aPersonNameValue().withValue("foo").withFrom(DateTime.parse("2000-03-5")).withTo(DateTime.parse("2001-02-6")).withVerified(true).build()).buildAsMiddlename();
         Attribute surname = aPersonName_1_1().addValue(aPersonNameValue().withValue("Bobbins").withFrom(DateTime.parse("2000-03-5")).withTo(DateTime.parse("2001-02-6")).withVerified(true).build()).buildAsSurname();
@@ -97,7 +97,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shoulHandleWhenMatchingDatasetIsPresentAndToDateIsMissingFromCurrentAddress() throws Exception {
+    public void transform_shoulHandleWhenMatchingDatasetIsPresentAndToDateIsMissingFromCurrentAddress() {
         Attribute currentAddress = anAddressAttribute().addAddress(anAddressAttributeValue().withTo(null).build()).buildCurrentAddress();
         Assertion assertion = aMatchingDatasetAssertion(
                 aPersonName_1_1().buildAsFirstname(),
@@ -115,7 +115,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shoulHandleWhenMatchingDatasetIsPresentAndToDateIsMissingFromPreviousAddress() throws Exception {
+    public void transform_shoulHandleWhenMatchingDatasetIsPresentAndToDateIsMissingFromPreviousAddress() {
         Assertion assertion = aMatchingDatasetAssertion(
                 aPersonName_1_1().buildAsFirstname(),
                 aPersonName_1_1().buildAsMiddlename(),
@@ -131,7 +131,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shoulHandleWhenMatchingDatasetIsPresentAndToDateIsMissingFromFirstName() throws Exception {
+    public void transform_shoulHandleWhenMatchingDatasetIsPresentAndToDateIsMissingFromFirstName() {
         Attribute firstName = aPersonName_1_1().addValue(aPersonNameValue().withTo(null).build()).buildAsFirstname();
         Assertion assertion = aMatchingDatasetAssertion(
                 firstName,
@@ -149,7 +149,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shoulHandleWhenMatchingDatasetIsPresentAndToDateIsPresentInFirstName() throws Exception {
+    public void transform_shoulHandleWhenMatchingDatasetIsPresentAndToDateIsPresentInFirstName() {
         Attribute firstName = aPersonName_1_1().addValue(aPersonNameValue().withTo(DateTime.parse("1066-01-05")).build()).buildAsFirstname();
         Assertion assertion = aMatchingDatasetAssertion(
                 firstName,
@@ -167,7 +167,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shouldMapMultipleFirstNames() throws Exception {
+    public void transform_shouldMapMultipleFirstNames() {
         Attribute firstName = aPersonName_1_1()
                 .addValue(aPersonNameValue().withValue("name1").build())
                 .addValue(aPersonNameValue().withValue("name2").build())
@@ -184,7 +184,7 @@ public class MatchingDatasetUnmarshallerTest {
         assertThat(matchingDataset.getFirstNames().size()).isEqualTo(2);
     }
     @Test
-    public void transform_shouldMapMultipleSurnames() throws Exception {
+    public void transform_shouldMapMultipleSurnames() {
         Attribute surName = aPersonName_1_1()
                 .addValue(aPersonNameValue().withValue("name1").build())
                 .addValue(aPersonNameValue().withValue("name2").build())
@@ -202,7 +202,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shouldMapMultipleMiddleNames() throws Exception {
+    public void transform_shouldMapMultipleMiddleNames() {
         Attribute middleName = aPersonName_1_1()
                 .addValue(aPersonNameValue().withValue("name1").build())
                 .addValue(aPersonNameValue().withValue("name2").build())
@@ -220,7 +220,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shouldMapMultipleBirthdates() throws Exception {
+    public void transform_shouldMapMultipleBirthdates() {
         Attribute attribute = aDate_1_1().addValue(aDateValue().withValue("2012-12-12").build()).addValue(aDateValue().withValue("2011-12-12").build()).buildAsDateOfBirth();
 
         AttributeStatement attributeStatementBuilder = anAttributeStatement().addAttribute(attribute).build();
@@ -235,7 +235,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shouldMapMultipleCurrentAddresses() throws Exception {
+    public void transform_shouldMapMultipleCurrentAddresses() {
         Attribute attribute = anAddressAttribute().addAddress(anAddressAttributeValue().build()).addAddress(anAddressAttributeValue().build()).buildCurrentAddress();
 
         AttributeStatement attributeStatementBuilder = anAttributeStatement().addAttribute(attribute).build();
@@ -250,7 +250,7 @@ public class MatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shouldMapMultiplePreviousAddresses() throws Exception {
+    public void transform_shouldMapMultiplePreviousAddresses() {
         Attribute attribute = anAddressAttribute().addAddress(anAddressAttributeValue().build()).addAddress(anAddressAttributeValue().build()).buildPreviousAddress();
 
         AttributeStatement attributeStatementBuilder = anAttributeStatement().addAttribute(attribute).build();

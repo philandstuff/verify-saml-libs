@@ -48,6 +48,24 @@ public class PersonNameAttributeBuilder_1_1 {
         return attribute;
     }
 
+    public Attribute buildAsEidasFirstname() {
+        Attribute attribute = build();
+
+        attribute.setFriendlyName(IdaConstants.Eidas_Attributes.FirstName.FRIENDLY_NAME);
+        attribute.setName(IdaConstants.Eidas_Attributes.FirstName.NAME);
+
+        return attribute;
+    }
+
+    public Attribute buildAsEidasFamilyName() {
+        Attribute attribute = build();
+
+        attribute.setFriendlyName(IdaConstants.Eidas_Attributes.FamilyName.FRIENDLY_NAME);
+        attribute.setName(IdaConstants.Eidas_Attributes.FamilyName.NAME);
+
+        return attribute;
+    }
+
     private Attribute build() {
         Attribute personNameAttribute = openSamlXmlObjectFactory.createAttribute();
         personNameAttribute.setNameFormat(nameFormat);
@@ -79,4 +97,5 @@ public class PersonNameAttributeBuilder_1_1 {
         this.nameFormat = nameFormat;
         return this;
     }
+
 }

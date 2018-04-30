@@ -36,6 +36,7 @@ import uk.gov.ida.saml.core.extensions.PersonName;
 import uk.gov.ida.saml.core.extensions.PostCode;
 import uk.gov.ida.saml.core.extensions.StringBasedMdsAttributeValue;
 import uk.gov.ida.saml.core.extensions.UPRN;
+import uk.gov.ida.saml.core.extensions.eidas.PersonIdentifier;
 
 /**
  * OpenSamlXmlObjectFactory wraps the underlying Open-Saml XMLObjectBuilderFactory
@@ -179,6 +180,16 @@ public class OpenSamlXmlObjectFactory {
         personNameObject.setValue(name);
         personNameObject.setLanguage(IdaConstants.IDA_LANGUAGE);
         return personNameObject;
+    }
+
+    public PersonIdentifier createPersonIdentifierAttributeValue(String pid) {
+        PersonIdentifier personNameObject = (PersonIdentifier) openSamlBuilderFactory.getBuilder(PersonIdentifier.TYPE_NAME).buildObject(PersonIdentifier.DEFAULT_ELEMENT_NAME, PersonIdentifier.TYPE_NAME);
+        personNameObject.setPersonIdentifier(pid);
+        return personNameObject;
+    }
+
+    public PersonIdentifier createPersonIdentifierAttribute(PersonIdentifier pid) {
+        return null;
     }
 
     public Gender createGenderAttributeValue(String value) {

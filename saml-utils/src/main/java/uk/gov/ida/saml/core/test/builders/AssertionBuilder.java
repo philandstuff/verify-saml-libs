@@ -98,6 +98,25 @@ public class AssertionBuilder {
             .addAttributeStatement(attributeStatementBuilder.build());
     }
 
+    public static AssertionBuilder anEidasMatchingDatasetAssertion(
+            Attribute firstName,
+            Attribute surname,
+            Attribute gender,
+            Attribute dateOfBirth,
+            Attribute currentAddress,
+            Attribute personalIdentifier) {
+        AttributeStatementBuilder attributeStatementBuilder = anAttributeStatement()
+            .addAttribute(firstName)
+            .addAttribute(surname)
+            .addAttribute(gender)
+            .addAttribute(dateOfBirth)
+            .addAttribute(currentAddress)
+                .addAttribute(personalIdentifier);
+
+        return anAssertion()
+            .addAttributeStatement(attributeStatementBuilder.build());
+    }
+
     public static AssertionBuilder aCycle3DatasetAssertion(String name, String value) {
         SimpleStringAttributeBuilder attribute = SimpleStringAttributeBuilder.aSimpleStringAttribute()
             .withName(name)

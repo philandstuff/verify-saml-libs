@@ -26,6 +26,10 @@ public class AddressAttributeBuilder_1_1 {
         return getAttribute(IdaConstants.Attributes_1_1.CurrentAddress.FRIENDLY_NAME, IdaConstants.Attributes_1_1.CurrentAddress.NAME);
     }
 
+    public Attribute buildEidasCurrentAddress() {
+        return getAttribute(IdaConstants.Eidas_Attributes.CurrentAddress.FRIENDLY_NAME, IdaConstants.Eidas_Attributes.CurrentAddress.NAME);
+    }
+
     private Attribute getAttribute(String friendlyName, String name) {
         Attribute addressAttribute = openSamlXmlObjectFactory.createAttribute();
 

@@ -24,18 +24,11 @@ public class PersonNameAttributeValueBuilder {
     public AttributeValue build() {
         PersonName personNameAttributeValue = openSamlXmlObjectFactory.createPersonNameAttributeValue(value);
 
-        if (from.isPresent()) {
-            personNameAttributeValue.setFrom(from.get());
-        }
-        if (to.isPresent()) {
-            personNameAttributeValue.setTo(to.get());
-        }
-        if (verified.isPresent()) {
-            personNameAttributeValue.setVerified(verified.get());
-        }
-        if (language.isPresent()) {
-            personNameAttributeValue.setLanguage(language.get());
-        }
+        from.ifPresent(personNameAttributeValue::setFrom);
+        to.ifPresent(personNameAttributeValue::setTo);
+        verified.ifPresent(personNameAttributeValue::setVerified);
+        language.ifPresent(personNameAttributeValue::setLanguage);
+
         return personNameAttributeValue;
     }
 

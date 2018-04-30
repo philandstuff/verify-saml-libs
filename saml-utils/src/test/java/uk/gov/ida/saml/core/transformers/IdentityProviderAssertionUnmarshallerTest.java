@@ -1,6 +1,5 @@
 package uk.gov.ida.saml.core.transformers;
 
-import java.util.Optional;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,32 +8,40 @@ import org.mockito.Mock;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.SubjectConfirmationData;
-import uk.gov.ida.saml.core.test.OpenSAMLMockitoRunner;
 import uk.gov.ida.saml.core.domain.AssertionRestrictions;
 import uk.gov.ida.saml.core.domain.IdentityProviderAssertion;
 import uk.gov.ida.saml.core.domain.IdentityProviderAuthnStatement;
 import uk.gov.ida.saml.core.domain.MatchingDataset;
+import uk.gov.ida.saml.core.test.OpenSAMLMockitoRunner;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static uk.gov.ida.saml.core.test.builders.AddressAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.AddressAttributeValueBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.DateAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.GenderAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.IdentityProviderAuthnStatementBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.MatchingDatasetBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeValueBuilder.*;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.ida.saml.core.test.builders.AddressAttributeBuilder_1_1.anAddressAttribute;
+import static uk.gov.ida.saml.core.test.builders.AddressAttributeValueBuilder_1_1.anAddressAttributeValue;
+import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.aMatchingDatasetAssertion;
+import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.anAssertion;
+import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.anAuthnStatementAssertion;
+import static uk.gov.ida.saml.core.test.builders.DateAttributeBuilder_1_1.aDate_1_1;
+import static uk.gov.ida.saml.core.test.builders.GenderAttributeBuilder_1_1.aGender_1_1;
+import static uk.gov.ida.saml.core.test.builders.IdentityProviderAuthnStatementBuilder.anIdentityProviderAuthnStatement;
+import static uk.gov.ida.saml.core.test.builders.MatchingDatasetBuilder.aMatchingDataset;
+import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeBuilder_1_1.aPersonName_1_1;
+import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeValueBuilder.aPersonNameValue;
 
 @RunWith(OpenSAMLMockitoRunner.class)
 public class IdentityProviderAssertionUnmarshallerTest {
 
     @Mock
-    private MatchingDatasetUnmarshaller matchingDatasetUnmarshaller;
+    private VerifyMatchingDatasetUnmarshaller matchingDatasetUnmarshaller;
 
     @Mock
     private IdentityProviderAuthnStatementUnmarshaller idaAuthnStatementUnmarshaller;
+
+    @Mock
+    private CountryMatchingDatasetUnmarshaller countryMatchingDatasetUnmarshaller;
 
     private IdentityProviderAssertionUnmarshaller unmarshaller;
 
@@ -42,6 +49,7 @@ public class IdentityProviderAssertionUnmarshallerTest {
     public void setUp() throws Exception {
         unmarshaller = new IdentityProviderAssertionUnmarshaller(
                 matchingDatasetUnmarshaller,
+                countryMatchingDatasetUnmarshaller,
                 idaAuthnStatementUnmarshaller,
                 "hubEntityId");
     }
@@ -50,7 +58,7 @@ public class IdentityProviderAssertionUnmarshallerTest {
     public void transform_shouldTransformResponseWhenNoMatchingDatasetIsPresent() throws Exception {
         Assertion originalAssertion = anAssertion().buildUnencrypted();
 
-        IdentityProviderAssertion transformedAssertion = unmarshaller.fromAssertion(originalAssertion);
+        IdentityProviderAssertion transformedAssertion = unmarshaller.fromVerifyAssertion(originalAssertion);
         assertThat(transformedAssertion.getMatchingDataset()).isEqualTo(Optional.empty());
     }
 
@@ -71,7 +79,7 @@ public class IdentityProviderAssertionUnmarshallerTest {
 
         when(matchingDatasetUnmarshaller.fromAssertion(assertion)).thenReturn(matchingDataset);
 
-        IdentityProviderAssertion identityProviderAssertion = unmarshaller.fromAssertion(assertion);
+        IdentityProviderAssertion identityProviderAssertion = unmarshaller.fromVerifyAssertion(assertion);
         verify(matchingDatasetUnmarshaller).fromAssertion(assertion);
         assertThat(identityProviderAssertion.getMatchingDataset().get()).isEqualTo(matchingDataset);
     }
@@ -82,7 +90,7 @@ public class IdentityProviderAssertionUnmarshallerTest {
         IdentityProviderAuthnStatement authnStatement = anIdentityProviderAuthnStatement().build();
 
         when(idaAuthnStatementUnmarshaller.fromAssertion(assertion)).thenReturn(authnStatement);
-        IdentityProviderAssertion identityProviderAssertion = unmarshaller.fromAssertion(assertion);
+        IdentityProviderAssertion identityProviderAssertion = unmarshaller.fromVerifyAssertion(assertion);
 
         verify(idaAuthnStatementUnmarshaller).fromAssertion(assertion);
 
@@ -94,7 +102,7 @@ public class IdentityProviderAssertionUnmarshallerTest {
         Assertion assertion = anAssertion().buildUnencrypted();
         SubjectConfirmationData subjectConfirmationData = assertion.getSubject().getSubjectConfirmations().get(0).getSubjectConfirmationData();
 
-        final IdentityProviderAssertion identityProviderAssertion = unmarshaller.fromAssertion(assertion);
+        final IdentityProviderAssertion identityProviderAssertion = unmarshaller.fromVerifyAssertion(assertion);
 
         final AssertionRestrictions assertionRestrictions = identityProviderAssertion.getAssertionRestrictions();
 

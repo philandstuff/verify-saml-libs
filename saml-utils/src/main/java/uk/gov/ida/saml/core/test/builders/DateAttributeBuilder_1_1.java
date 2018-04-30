@@ -32,6 +32,16 @@ public class DateAttributeBuilder_1_1 {
         return attribute;
     }
 
+    public Attribute buildAsEidasDateOfBirth() {
+        Attribute attribute = build();
+
+        attribute.setFriendlyName(IdaConstants.Eidas_Attributes.DateOfBirth.FRIENDLY_NAME);
+        attribute.setName(IdaConstants.Eidas_Attributes.DateOfBirth.NAME);
+        attribute.setNameFormat(Attribute.UNSPECIFIED);
+
+        return attribute;
+    }
+
     public DateAttributeBuilder_1_1 addValue(AttributeValue attributeValue) {
         this.values.add(attributeValue);
         this.addDefaultValue = false;

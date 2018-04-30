@@ -29,14 +29,24 @@ public class GenderAttributeBuilder_1_1 {
         genderAttribute.setName(IdaConstants.Attributes_1_1.Gender.NAME);
         genderAttribute.setNameFormat(Attribute.UNSPECIFIED);
 
+        return buildAttribute(genderAttribute);
+    }
+
+    public Attribute buildEidasGender() {
+
+        Attribute genderAttribute = openSamlXmlObjectFactory.createAttribute();
+        genderAttribute.setFriendlyName(IdaConstants.Eidas_Attributes.Gender.FRIENDLY_NAME);
+        genderAttribute.setName(IdaConstants.Eidas_Attributes.Gender.NAME);
+        genderAttribute.setNameFormat(Attribute.UNSPECIFIED);
+
+        return buildAttribute(genderAttribute);
+    }
+
+    private Attribute buildAttribute(Attribute genderAttribute) {
         Gender genderAttributeValue = openSamlXmlObjectFactory.createGenderAttributeValue(value.orElse("Male"));
 
-        if (from.isPresent()) {
-            genderAttributeValue.setFrom(from.get());
-        }
-        if (to.isPresent()) {
-            genderAttributeValue.setTo(to.get());
-        }
+        from.ifPresent(genderAttributeValue::setFrom);
+        to.ifPresent(genderAttributeValue::setTo);
 
         genderAttributeValue.setVerified(verified);
 

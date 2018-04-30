@@ -31,7 +31,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
 
-public class EidasMetadataResolverRepository {
+public class EidasMetadataResolverRepository implements MetadataResolverRepository {
 
     private final Logger log = LoggerFactory.getLogger(EidasMetadataResolverRepository.class);
     private final EidasTrustAnchorResolver trustAnchorResolver;
@@ -63,18 +63,22 @@ public class EidasMetadataResolverRepository {
         refresh();
     }
 
+    @Override
     public Optional<MetadataResolver> getMetadataResolver(String entityId) {
         return Optional.ofNullable(metadataResolvers.get(entityId)).map(MetadataResolverContainer::getMetadataResolver);
     }
 
+    @Override
     public List<String> getEntityIdsWithResolver() {
         return metadataResolvers.keySet().asList();
     }
 
+    @Override
     public Optional<ExplicitKeySignatureTrustEngine> getSignatureTrustEngine(String entityId) {
         return Optional.ofNullable(metadataResolvers.get(entityId)).map(MetadataResolverContainer::getSignatureTrustEngine);
     }
 
+    @Override
     public Map<String, MetadataResolver> getMetadataResolvers(){
         return metadataResolvers.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -83,10 +87,12 @@ public class EidasMetadataResolverRepository {
                 ));
     }
 
+    @Override
     public List<String> getTrustAnchorsEntityIds() {
         return trustAnchors.stream().map(JWK::getKeyID).collect(Collectors.toList());
     }
 
+    @Override
     public void refresh() {
         delayBeforeNextRefresh = eidasMetadataConfiguration.getTrustAnchorMaxRefreshDelay();
         try {
@@ -126,6 +132,7 @@ public class EidasMetadataResolverRepository {
         stopOldMetadataResolvers(oldMetadataResolvers);
     }
 
+    @Override
     public List<X509Certificate> sortCertsByDate(JWK trustAnchor){
     	
     	List<X509Certificate> certs = trustAnchor.getX509CertChain().stream()

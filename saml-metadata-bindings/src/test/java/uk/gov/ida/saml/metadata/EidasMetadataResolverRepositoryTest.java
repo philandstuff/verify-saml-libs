@@ -85,7 +85,7 @@ public class EidasMetadataResolverRepositoryTest {
     @Captor
     private ArgumentCaptor<MetadataResolverConfiguration> metadataResolverConfigurationCaptor;
 
-    private EidasMetadataResolverRepository metadataResolverRepository;
+    private MetadataResolverRepository metadataResolverRepository;
 
     private List<JWK> trustAnchors;
 

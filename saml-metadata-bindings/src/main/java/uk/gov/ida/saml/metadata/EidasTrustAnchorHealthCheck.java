@@ -15,10 +15,10 @@ import java.util.Map;
 
 public class EidasTrustAnchorHealthCheck extends HealthCheck {
 
-    private final EidasMetadataResolverRepository metadataResolverRepository;
+    private final MetadataResolverRepository metadataResolverRepository;
 
     @Inject
-    public EidasTrustAnchorHealthCheck(EidasMetadataResolverRepository metadataResolverRepository) {
+    public EidasTrustAnchorHealthCheck(MetadataResolverRepository metadataResolverRepository) {
         this.metadataResolverRepository = metadataResolverRepository;
     }
 

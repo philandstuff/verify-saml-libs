@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 public class EidasTrustAnchorHealthCheckTest {
 
     @Mock
-    private EidasMetadataResolverRepository metadataResolverRepository;
+    private MetadataResolverRepository metadataResolverRepository;
 
     private EidasTrustAnchorHealthCheck eidasTrustAnchorHealthCheck;
 

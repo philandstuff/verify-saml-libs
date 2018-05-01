@@ -3,15 +3,12 @@ package uk.gov.ida.saml.metadata;
 import certificates.values.CACertificates;
 import keystore.KeyStoreRule;
 import keystore.builders.KeyStoreRuleBuilder;
-import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.xml.BasicParserPool;
-import net.shibboleth.utilities.java.support.xml.XMLParserException;
 import org.apache.commons.io.IOUtils;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.opensaml.core.xml.XMLObject;
-import org.opensaml.core.xml.io.UnmarshallingException;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.saml2.metadata.EntitiesDescriptor;
 import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
@@ -37,6 +34,7 @@ public class CertificateChainValidationFilterTest {
 
     private static final List<String> IDP_ENTITY_IDS = asList(TestEntityIds.STUB_IDP_ONE, TestEntityIds.STUB_IDP_TWO, TestEntityIds.STUB_IDP_THREE, TestEntityIds.STUB_IDP_FOUR);
     private static final List<String> HUB_ENTITY_IDS = Collections.singletonList(TestEntityIds.HUB_ENTITY_ID);
+    private static final List<String> HUB_KEY_NAMES = asList(EntityDescriptorFactory.SIGNING_ONE, EntityDescriptorFactory.SIGNING_TWO, EntityDescriptorFactory.ENCRYPTION);
 
     @ClassRule
     public static KeyStoreRule idpKeyStoreRule = KeyStoreRuleBuilder.aKeyStoreRule().withCertificate("idp", CACertificates.TEST_IDP_CA)
@@ -62,6 +60,7 @@ public class CertificateChainValidationFilterTest {
         metadata = idpCertificateChainValidationFilter.filter(metadata);
 
         assertThat(getEntityIdsFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME)).containsOnlyElementsOf(HUB_ENTITY_IDS);
+        assertThat(getKeyNamesFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME, TestEntityIds.HUB_ENTITY_ID)).containsOnlyElementsOf(HUB_KEY_NAMES);
         assertThat(getEntityIdsFromMetadata(metadata, IDPSSODescriptor.DEFAULT_ELEMENT_NAME)).containsOnlyElementsOf(IDP_ENTITY_IDS);
     }
 
@@ -83,6 +82,7 @@ public class CertificateChainValidationFilterTest {
         final XMLObject metadata = validateMetadata(certificateChainValidationFilter, metadataFactory.defaultMetadata());
 
         assertThat(getEntityIdsFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME)).containsOnlyElementsOf(HUB_ENTITY_IDS);
+        assertThat(getKeyNamesFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME, TestEntityIds.HUB_ENTITY_ID)).containsOnlyElementsOf(HUB_KEY_NAMES);
         assertThat(getEntityIdsFromMetadata(metadata, IDPSSODescriptor.DEFAULT_ELEMENT_NAME)).isEmpty();
     }
 
@@ -123,10 +123,24 @@ public class CertificateChainValidationFilterTest {
         final XMLObject metadata = validateMetadata(certificateChainValidationFilter, metadataWithOneBadIdpCertificate);
 
         assertThat(getEntityIdsFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME)).containsOnlyElementsOf(HUB_ENTITY_IDS);
+        assertThat(getKeyNamesFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME, TestEntityIds.HUB_ENTITY_ID)).containsOnlyElementsOf(HUB_KEY_NAMES);
         assertThat(getEntityIdsFromMetadata(metadata, IDPSSODescriptor.DEFAULT_ELEMENT_NAME)).containsOnlyElementsOf(IDP_ENTITY_IDS);
     }
 
-    private XMLObject validateMetadata(final CertificateChainValidationFilter certificateChainValidationFilter, String metadataContent) throws XMLParserException, UnmarshallingException, ComponentInitializationException {
+    @Test
+    public void shouldFilterOutUntrustedHubSigningCertificateWhenAHubSigningCertificateIsNotSignedByCorrectCA() throws Exception {
+        final CertificateChainValidationFilter spCertificateChainValidationFilter = new CertificateChainValidationFilter(SPSSODescriptor.DEFAULT_ELEMENT_NAME, certificateChainValidator, hubKeyStoreRule.getKeyStore());
+        final EntityDescriptorFactory entityDescriptorFactory =  new EntityDescriptorFactory();
+        String metadataWithOneBadKeyName = metadataFactory.metadata(Collections.singletonList(entityDescriptorFactory.badHubEntityDescriptor()));
+
+        final XMLObject metadata = validateMetadata(spCertificateChainValidationFilter, metadataWithOneBadKeyName);
+
+        assertThat(getEntityIdsFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME)).containsOnlyElementsOf(HUB_ENTITY_IDS);
+        assertThat(getKeyNamesFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME, TestEntityIds.HUB_ENTITY_ID)).containsOnlyElementsOf(HUB_KEY_NAMES);
+        assertThat(getKeyNamesFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME, TestEntityIds.HUB_ENTITY_ID)).doesNotContain(EntityDescriptorFactory.SIGNING_BAD);
+    }
+
+    private XMLObject validateMetadata(final CertificateChainValidationFilter certificateChainValidationFilter, String metadataContent) throws Exception {
         BasicParserPool parserPool = new BasicParserPool();
         parserPool.initialize();
         XMLObject metadata = XMLObjectSupport.unmarshallFromInputStream(parserPool, IOUtils.toInputStream(metadataContent));
@@ -140,9 +154,41 @@ public class CertificateChainValidationFilterTest {
 
             entitiesDescriptor.getEntityDescriptors().forEach(entityDescriptor -> {
                 final String entityID = entityDescriptor.getEntityID();
-                entityDescriptor.getRoleDescriptors().stream().filter(roleDescriptor -> roleDescriptor.getElementQName().equals(role)).map(roleDescriptor -> entityID).forEach(entityIds::add);
+                entityDescriptor.getRoleDescriptors()
+                                .stream()
+                                .filter(roleDescriptor -> roleDescriptor.getElementQName().equals(role))
+                                .map(roleDescriptor -> entityID)
+                                .forEach(entityIds::add);
             });
         }
         return entityIds;
+    }
+
+    private List<String> getKeyNamesFromMetadata(final XMLObject metadata, final QName role, final String entityId) {
+        List<String> keyNames = new ArrayList<>();
+        if (metadata != null) {
+            final EntitiesDescriptor entitiesDescriptor = (EntitiesDescriptor) metadata;
+
+            entitiesDescriptor.getEntityDescriptors()
+                              .stream()
+                              .filter(entityDescriptor -> entityId.equals(entityDescriptor.getEntityID()))
+                              .forEach(
+                                entityDescriptor ->
+                                    entityDescriptor.getRoleDescriptors()
+                                                    .stream()
+                                                    .filter(roleDescriptor -> roleDescriptor.getElementQName().equals(role))
+                                                    .forEach(
+                                                        roleDescriptor ->
+                                                            roleDescriptor.getKeyDescriptors()
+                                                                          .forEach(
+                                                                                keyDescriptor ->
+                                                                                    keyDescriptor.getKeyInfo()
+                                                                                                 .getKeyNames()
+                                                                                                 .stream()
+                                                                                                 .forEach(
+                                                                                                    keyName ->
+                                                                                                        keyNames.add(keyName.getValue())))));
+        }
+        return keyNames;
     }
 }

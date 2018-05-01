@@ -1,9 +1,6 @@
 package uk.gov.ida.saml.metadata.test.factories.metadata;
 
-import static java.util.Arrays.asList;
-
-import java.util.List;
-
+import com.google.common.base.Throwables;
 import org.joda.time.DateTime;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.saml.saml2.metadata.AttributeAuthorityDescriptor;
@@ -15,9 +12,6 @@ import org.opensaml.xmlsec.signature.KeyInfo;
 import org.opensaml.xmlsec.signature.X509Certificate;
 import org.opensaml.xmlsec.signature.X509Data;
 import org.opensaml.xmlsec.signature.support.SignatureException;
-
-import com.google.common.base.Throwables;
-
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
 import uk.gov.ida.saml.core.test.TestEntityIds;
 import uk.gov.ida.saml.core.test.builders.metadata.AttributeAuthorityDescriptorBuilder;
@@ -29,24 +23,26 @@ import uk.gov.ida.saml.core.test.builders.metadata.SPSSODescriptorBuilder;
 import uk.gov.ida.saml.core.test.builders.metadata.X509CertificateBuilder;
 import uk.gov.ida.saml.core.test.builders.metadata.X509DataBuilder;
 
+import java.util.List;
+
+import static java.util.Arrays.asList;
+
 public class EntityDescriptorFactory {
 
+    public static final String SIGNING_ONE = "signing_one";
+    public static final String SIGNING_TWO = "signing_two";
+    public static final String ENCRYPTION = "encryption";
+    public static final String SIGNING_BAD = "signing_bad";
+    private static final String SIGNING_USAGE = "SIGNING";
+    private static final String ENCRYPTION_USAGE = "ENCRYPTION";
+
     public EntityDescriptor hubEntityDescriptor() {
-        X509Certificate x509CertificateOne = X509CertificateBuilder.aX509Certificate().withCert(TestCertificateStrings.HUB_TEST_PUBLIC_SIGNING_CERT).build();
-        X509Data x509DataOne = X509DataBuilder.aX509Data().withX509Certificate(x509CertificateOne).build();
-        KeyInfo signingOne = KeyInfoBuilder.aKeyInfo().withKeyName("signing_one").withX509Data(x509DataOne).build();
-        KeyDescriptor keyDescriptorOne = KeyDescriptorBuilder.aKeyDescriptor().withKeyInfo(signingOne).build();
-        X509Certificate x509CertificateTwo = X509CertificateBuilder.aX509Certificate().withCert(TestCertificateStrings.HUB_TEST_SECONDARY_PUBLIC_SIGNING_CERT).build();
-        X509Data x509DataTwo = X509DataBuilder.aX509Data().withX509Certificate(x509CertificateTwo).build();
-        KeyInfo signingTwo = KeyInfoBuilder.aKeyInfo().withKeyName("signing_two").withX509Data(x509DataTwo).build();
-        KeyDescriptor keyDescriptorTwo = KeyDescriptorBuilder.aKeyDescriptor().withKeyInfo(signingTwo).build();
-        X509Certificate encryptionCertificate = X509CertificateBuilder.aX509Certificate().withCert(TestCertificateStrings.HUB_TEST_PUBLIC_ENCRYPTION_CERT).build();
-        X509Data encryptionX509Data= X509DataBuilder.aX509Data().withX509Certificate(encryptionCertificate).build();
-        KeyInfo encryptionKeyInfo= KeyInfoBuilder.aKeyInfo().withKeyName("encryption").withX509Data(encryptionX509Data).build();
-        KeyDescriptor encryptionKeyDescriptor = KeyDescriptorBuilder.aKeyDescriptor().withUse("ENCRYPTION").withKeyInfo(encryptionKeyInfo).build();
+        KeyDescriptor siginingKeyDescriptorOne = createKeyDescriptor(TestCertificateStrings.HUB_TEST_PUBLIC_SIGNING_CERT, SIGNING_ONE, SIGNING_USAGE);
+        KeyDescriptor siginingKeyDescriptorTwo = createKeyDescriptor(TestCertificateStrings.HUB_TEST_SECONDARY_PUBLIC_SIGNING_CERT, SIGNING_TWO, SIGNING_USAGE);
+        KeyDescriptor encryptionKeyDescriptor = createKeyDescriptor(TestCertificateStrings.HUB_TEST_PUBLIC_ENCRYPTION_CERT, ENCRYPTION, ENCRYPTION_USAGE);
         SPSSODescriptor spssoDescriptor = SPSSODescriptorBuilder.anSpServiceDescriptor()
-                .addKeyDescriptor(keyDescriptorOne)
-                .addKeyDescriptor(keyDescriptorTwo)
+                .addKeyDescriptor(siginingKeyDescriptorOne)
+                .addKeyDescriptor(siginingKeyDescriptorTwo)
                 .addKeyDescriptor(encryptionKeyDescriptor)
                 .withoutDefaultSigningKey()
                 .withoutDefaultEncryptionKey().build();
@@ -59,6 +55,39 @@ public class EntityDescriptorFactory {
                     .withSignature(null)
                     .withoutSigning()
                     .build();
+        } catch (MarshallingException | SignatureException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private KeyDescriptor createKeyDescriptor(final String testCertificateString, final String keyName, final String usage) {
+        X509Certificate x509Certificate = X509CertificateBuilder.aX509Certificate().withCert(testCertificateString).build();
+        X509Data x509Data = X509DataBuilder.aX509Data().withX509Certificate(x509Certificate).build();
+        KeyInfo signing = KeyInfoBuilder.aKeyInfo().withKeyName(keyName).withX509Data(x509Data).build();
+        return KeyDescriptorBuilder.aKeyDescriptor().withUse(usage).withKeyInfo(signing).build();
+    }
+
+    public EntityDescriptor badHubEntityDescriptor() {
+        KeyDescriptor siginingKeyDescriptorOne = createKeyDescriptor(TestCertificateStrings.HUB_TEST_PUBLIC_SIGNING_CERT, SIGNING_ONE, SIGNING_USAGE);
+        KeyDescriptor siginingKeyDescriptorTwo = createKeyDescriptor(TestCertificateStrings.HUB_TEST_SECONDARY_PUBLIC_SIGNING_CERT, SIGNING_TWO, SIGNING_USAGE);
+        KeyDescriptor encryptionKeyDescriptor = createKeyDescriptor(TestCertificateStrings.HUB_TEST_PUBLIC_ENCRYPTION_CERT, ENCRYPTION, ENCRYPTION_USAGE);
+        KeyDescriptor siginingKeyDescriptorBad = createKeyDescriptor(TestCertificateStrings.TEST_RP_PUBLIC_SIGNING_CERT, SIGNING_BAD, SIGNING_USAGE);
+        SPSSODescriptor spssoDescriptor = SPSSODescriptorBuilder.anSpServiceDescriptor()
+                                                                .addKeyDescriptor(siginingKeyDescriptorOne)
+                                                                .addKeyDescriptor(siginingKeyDescriptorTwo)
+                                                                .addKeyDescriptor(encryptionKeyDescriptor)
+                                                                .addKeyDescriptor(siginingKeyDescriptorBad)
+                                                                .withoutDefaultSigningKey()
+                                                                .withoutDefaultEncryptionKey().build();
+        try {
+            return EntityDescriptorBuilder.anEntityDescriptor()
+                                          .withEntityId(TestEntityIds.HUB_ENTITY_ID)
+                                          .addSpServiceDescriptor(spssoDescriptor)
+                                          .withIdpSsoDescriptor(null)
+                                          .withValidUntil(DateTime.now().plusWeeks(2))
+                                          .withSignature(null)
+                                          .withoutSigning()
+                                          .build();
         } catch (MarshallingException | SignatureException e) {
             throw Throwables.propagate(e);
         }

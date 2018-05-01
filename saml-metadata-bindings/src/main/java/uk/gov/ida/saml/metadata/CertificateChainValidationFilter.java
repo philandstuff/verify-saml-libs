@@ -4,15 +4,14 @@ import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.metadata.resolver.filter.MetadataFilter;
 import org.opensaml.saml.saml2.metadata.EntitiesDescriptor;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml.saml2.metadata.KeyDescriptor;
 import org.opensaml.saml.saml2.metadata.RoleDescriptor;
 import org.opensaml.xmlsec.signature.KeyInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.common.shared.security.verification.CertificateChainValidator;
-import uk.gov.ida.saml.metadata.exception.CertificateChainValidationFailedException;
 import uk.gov.ida.saml.metadata.exception.CertificateConversionException;
 import uk.gov.ida.saml.metadata.exception.EntityDescriptorListEmptyException;
+import uk.gov.ida.saml.metadata.exception.KeyDescriptorListEmptyException;
 import uk.gov.ida.saml.metadata.exception.RoleDescriptorListEmptyException;
 
 import javax.annotation.Nonnull;
@@ -89,10 +88,9 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
             .removeIf(roleDescriptor -> {
                 if (getRole().equals(roleDescriptor.getElementQName())) {
                     try {
-                        performCertificateChainValidation(roleDescriptor);
-                    } catch (final CertificateChainValidationFailedException e) {
-                        LOG.error("RoleDescriptor '{}' subordinate to entity '{}' failed certificate chain validation, " +
-                                  "removing from metadata provider", roleDescriptor.getElementQName(), entityID);
+                        processKeyDescriptor(roleDescriptor);
+                    } catch (KeyDescriptorListEmptyException e) {
+                        LOG.error("KeyDescriptor '{}' has empty key descriptor list, removing from metadata provider", entityID);
                         return true;
                     }
                 }
@@ -100,7 +98,31 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
             });
 
         if (entityDescriptor.getRoleDescriptors().isEmpty()) {
-            throw new RoleDescriptorListEmptyException("Role Descriptors list is empty");
+            throw new RoleDescriptorListEmptyException("Role Descriptor list is empty");
+        }
+    }
+
+    private void processKeyDescriptor(@Nonnull RoleDescriptor roleDescriptor) throws KeyDescriptorListEmptyException {
+
+        roleDescriptor.getKeyDescriptors().removeIf(
+            keyDescriptor -> {
+                KeyInfo keyInfo = keyDescriptor.getKeyInfo();
+                try {
+                    for (final X509Certificate certificate : getCertificates(keyInfo)) {
+                        if (!getCertificateChainValidator().validate(certificate, getKeyStore()).isValid()) {
+                            LOG.error("Certificate chain validation failed for metadata entry {}", certificate.getSubjectDN());
+                            return true;
+                        }
+                    }
+                    return false;
+                } catch (CertificateException e) {
+                    throw new CertificateConversionException(e);
+                }
+            }
+        );
+
+        if (roleDescriptor.getKeyDescriptors().isEmpty()) {
+            throw new KeyDescriptorListEmptyException("Key Descriptor list is empty");
         }
     }
 
@@ -127,24 +149,8 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
             toRemove.clear();
         }
 
-        entitiesDescriptor.getEntitiesDescriptors().forEach(
-            internalEntitiesDescriptor -> {
-                final String childName = getGroupName(internalEntitiesDescriptor);
-                LOG.trace("Processing EntitiesDescriptor member: {}", childName);
-                try {
-                    processEntityGroup(internalEntitiesDescriptor);
-                } catch (final EntityDescriptorListEmptyException e) {
-                    LOG.error("EntitiesDescriptor '{}' has empty entity descriptor list, removing from metadata provider", childName);
-                    toRemove.add(internalEntitiesDescriptor);
-                }
-        });
-
-        if (!toRemove.isEmpty()) {
-            entitiesDescriptor.getEntitiesDescriptors().removeAll(toRemove);
-        }
-
-        if (entitiesDescriptor.getEntityDescriptors().isEmpty() && entitiesDescriptor.getEntitiesDescriptors().isEmpty()) {
-            throw new EntityDescriptorListEmptyException("Entity Descriptors list and Entities Descriptors list are empty");
+        if (entitiesDescriptor.getEntityDescriptors().isEmpty()) {
+            throw new EntityDescriptorListEmptyException("Entity Descriptor list is empty");
         }
     }
 
@@ -158,21 +164,5 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
             return name;
         }
         return "(unnamed)";
-    }
-
-    private void performCertificateChainValidation(final RoleDescriptor roleDescriptor) throws CertificateChainValidationFailedException {
-        for (final KeyDescriptor keyDescriptor : roleDescriptor.getKeyDescriptors()) {
-            KeyInfo keyInfo = keyDescriptor.getKeyInfo();
-            try {
-                for (final X509Certificate certificate : getCertificates(keyInfo)) {
-                    if (!getCertificateChainValidator().validate(certificate, getKeyStore()).isValid()) {
-                        LOG.error("Certificate chain validation failed for metadata entry {}", certificate.getSubjectDN());
-                        throw new CertificateChainValidationFailedException("Certificate chain validation failed for metadata entry " + certificate.getSubjectDN());
-                    }
-                }
-            } catch (CertificateException e) {
-                throw new CertificateConversionException(e);
-            }
-        }
     }
 }

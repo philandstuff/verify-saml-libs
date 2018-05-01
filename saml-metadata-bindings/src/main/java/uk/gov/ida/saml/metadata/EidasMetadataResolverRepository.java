@@ -4,12 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.util.X509CertUtils;
 import io.dropwizard.setup.Environment;
+import net.shibboleth.utilities.java.support.component.AbstractInitializableComponent;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
+import org.apache.commons.collections.ListUtils;
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.utils.Base64;
 import org.joda.time.DateTime;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
-import org.opensaml.saml.metadata.resolver.impl.AbstractReloadingMetadataResolver;
 import org.opensaml.xmlsec.signature.support.impl.ExplicitKeySignatureTrustEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toList;
 
 public class EidasMetadataResolverRepository implements MetadataResolverRepository {
 
@@ -53,11 +56,11 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
                                            Timer timer,
                                            MetadataSignatureTrustEngineFactory metadataSignatureTrustEngineFactory,
                                            MetadataResolverConfigBuilder metadataResolverConfigBuilder) {
-        this.trustAnchorResolver = trustAnchorResolver;
+        this.timer = timer;
         this.environment = environment;
+        this.trustAnchorResolver = trustAnchorResolver;
         this.eidasMetadataConfiguration = eidasMetadataConfiguration;
         this.dropwizardMetadataResolverFactory = dropwizardMetadataResolverFactory;
-        this.timer = timer;
         this.metadataSignatureTrustEngineFactory = metadataSignatureTrustEngineFactory;
         this.metadataResolverConfigBuilder = metadataResolverConfigBuilder;
         refresh();
@@ -69,7 +72,7 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
     }
 
     @Override
-    public List<String> getEntityIdsWithResolver() {
+    public List<String> getResolverEntityIds() {
         return metadataResolvers.keySet().asList();
     }
 
@@ -81,100 +84,103 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
     @Override
     public Map<String, MetadataResolver> getMetadataResolvers(){
         return metadataResolvers.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> e.getValue().getMetadataResolver()
-                ));
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> e.getValue().getMetadataResolver()
+            ));
     }
 
     @Override
     public List<String> getTrustAnchorsEntityIds() {
-        return trustAnchors.stream().map(JWK::getKeyID).collect(Collectors.toList());
+        return trustAnchors.stream().map(JWK::getKeyID).collect(toList());
+    }
+
+    private JWK getTrustAnchorFromKeyId(String keyId) {
+        return trustAnchors.stream().filter(e -> e.getKeyID().equals(keyId)).findFirst().orElseThrow(() -> new IllegalArgumentException("Cannot find " + keyId + " in trust anchors"));
     }
 
     @Override
     public void refresh() {
         delayBeforeNextRefresh = eidasMetadataConfiguration.getTrustAnchorMaxRefreshDelay();
+
         try {
             trustAnchors = trustAnchorResolver.getTrustAnchors();
-            refreshMetadataResolvers(trustAnchors);
+            refreshMetadataResolvers();
         } catch (Exception e) {
             log.error("Error fetching trust anchor or validating it", e);
             setShortRefreshDelay();
         } finally {
-            timer.schedule(new RefreshTimerTask(), delayBeforeNextRefresh);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    refresh();
+                }
+            }, delayBeforeNextRefresh);
         }
     }
 
-    private void refreshMetadataResolvers(List<JWK> trustAnchors) {
-        ImmutableMap.Builder<String, MetadataResolverContainer> metadataResolverBuilder = ImmutableMap.builder();
-        for (JWK trustAnchor : trustAnchors) {
+    private void refreshMetadataResolvers() {
+        List<String> trustAnchorsEntityIds = getTrustAnchorsEntityIds();
+        List<String> currentResolverEntityIds = getResolverEntityIds();
+
+        List<String> resolversToRemove = ListUtils.subtract(currentResolverEntityIds, trustAnchorsEntityIds);
+        ImmutableMap.Builder<String, MetadataResolverContainer> newMetadataResolvers = new ImmutableMap.Builder<>();
+
+        trustAnchorsEntityIds.forEach(trustAnchorsEntityId -> {
             try {
-                Collection<String> errors = CountryTrustAnchor.findErrors(trustAnchor);
-
-                if (!errors.isEmpty()) {
-                    throw new Error(String.format("Managed to generate an invalid anchor: %s", String.join(", ", errors)));
-                }
-
-                metadataResolverBuilder.put(trustAnchor.getKeyID(), createMetadataResolver(trustAnchor));
-
-                Date metadataSigningCertExpiryDate = sortCertsByDate(trustAnchor).get(0).getNotAfter();
-                Date nextRunTime = DateTime.now().plus(delayBeforeNextRefresh).toDate();
-                if (metadataSigningCertExpiryDate.before(nextRunTime)) {
-                    setShortRefreshDelay();
-                }
-            } catch (Exception e) {
-                log.error("Error creating MetadataResolver for " + trustAnchor.getKeyID(), e);
+                MetadataResolverContainer metadataResolverContainer = metadataResolvers.containsKey(trustAnchorsEntityId) ?
+                        metadataResolvers.get(trustAnchorsEntityId) : createMetadataResolverContainer(trustAnchorsEntityId);
+                newMetadataResolvers.put(trustAnchorsEntityId, metadataResolverContainer);
+            } catch (CertificateException | UnsupportedEncodingException | ComponentInitializationException e) {
+                log.error("Error creating MetadataResolver for " + trustAnchorsEntityId, e);
             }
-        }
-        ImmutableMap<String, MetadataResolverContainer> oldMetadataResolvers = metadataResolvers;
-        metadataResolvers = metadataResolverBuilder.build();
-        stopOldMetadataResolvers(oldMetadataResolvers);
+        });
+
+        List<JerseyClientMetadataResolver> metadataResolversToRemove = resolversToRemove.stream()
+                .map(resolverToRemove -> metadataResolvers.get(resolverToRemove).getMetadataResolver())
+                .collect(toList());
+
+        this.metadataResolvers = newMetadataResolvers.build();
+
+        metadataResolversToRemove.forEach(AbstractInitializableComponent::destroy);
     }
+
+    private MetadataResolverContainer createMetadataResolverContainer(String resolverToAddEntityId) throws CertificateException, UnsupportedEncodingException, ComponentInitializationException {
+            JWK trustAnchor = getTrustAnchorFromKeyId(resolverToAddEntityId);
+
+            Collection<String> errors = CountryTrustAnchor.findErrors(trustAnchor);
+
+            if (!errors.isEmpty()) {
+                throw new Error(String.format("Managed to generate an invalid anchor: %s", String.join(", ", errors)));
+            }
+
+            Date metadataSigningCertExpiryDate = sortCertsByDate(trustAnchor).get(0).getNotAfter();
+            Date nextRunTime = DateTime.now().plus(delayBeforeNextRefresh).toDate();
+            if (metadataSigningCertExpiryDate.before(nextRunTime)) {
+                setShortRefreshDelay();
+            }
+
+            return createMetadataResolverContainer(trustAnchor);
+        }
 
     @Override
     public List<X509Certificate> sortCertsByDate(JWK trustAnchor){
-    	
-    	List<X509Certificate> certs = trustAnchor.getX509CertChain().stream()
+        return trustAnchor.getX509CertChain().stream()
                 .map(base64 -> {
-                	
                     try {
                         return X509CertUtils.parse(Base64.decode(String.valueOf(base64)));
                     } catch (Base64DecodingException e) {
-                    	throw new IllegalArgumentException(String.format("Failed to parse X509 certificate: %s", e.getMessage()));
+                        throw new IllegalArgumentException(String.format("Failed to parse X509 certificate: %s", e.getMessage()));
                     }
                 })
-                .sorted((cert1, cert2) -> cert1.getNotAfter().compareTo(cert2.getNotAfter()))
-                .collect(Collectors.toList());
-    	
-    	return certs;
+                .sorted(Comparator.comparing(X509Certificate::getNotAfter))
+                .collect(toList());
     }
     
-    private MetadataResolverContainer createMetadataResolver(JWK trustAnchor) throws CertificateException, ComponentInitializationException, UnsupportedEncodingException {
+    private MetadataResolverContainer createMetadataResolverContainer(JWK trustAnchor) throws CertificateException, ComponentInitializationException, UnsupportedEncodingException {
         MetadataResolverConfiguration metadataResolverConfiguration = metadataResolverConfigBuilder.createMetadataResolverConfiguration(trustAnchor, eidasMetadataConfiguration);
-        MetadataResolver metadataResolver = dropwizardMetadataResolverFactory.createMetadataResolver(environment, metadataResolverConfiguration);
-        return new MetadataResolverContainer(
-                metadataResolverConfiguration.getJerseyClientName(),
-                metadataResolver,
-                metadataSignatureTrustEngineFactory.createSignatureTrustEngine(metadataResolver));
-    }
-
-    private void stopOldMetadataResolvers(ImmutableMap<String, MetadataResolverContainer> oldMetadataResolvers) {
-        oldMetadataResolvers.forEach((key, metadataResolverContainer) -> {
-            MetadataResolver metadataResolver = metadataResolverContainer.getMetadataResolver();
-            if (metadataResolver instanceof AbstractReloadingMetadataResolver) {
-                // destroy() stops the timer - objects using the MetadataResolver will still be able to read metadata objects that are in memory
-                ((AbstractReloadingMetadataResolver) metadataResolver).destroy();
-            }
-            environment.metrics().remove(metadataResolverContainer.getMetricName());
-        });
-    }
-
-    private class RefreshTimerTask extends TimerTask {
-        @Override
-        public void run() {
-            refresh();
-        }
+        JerseyClientMetadataResolver metadataResolver = (JerseyClientMetadataResolver) dropwizardMetadataResolverFactory.createMetadataResolver(environment, metadataResolverConfiguration);
+        return new MetadataResolverContainer(metadataResolver, metadataSignatureTrustEngineFactory.createSignatureTrustEngine(metadataResolver));
     }
 
     private void setShortRefreshDelay() {
@@ -182,14 +188,11 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
     }
 
     private class MetadataResolverContainer {
-        private final String metricName;
-        private final MetadataResolver metadataResolver;
+        private final JerseyClientMetadataResolver metadataResolver;
         private final ExplicitKeySignatureTrustEngine explicitKeySignatureTrustEngine;
 
-        private MetadataResolverContainer(String metricName,
-                                          MetadataResolver metadataResolver,
+        private MetadataResolverContainer(JerseyClientMetadataResolver metadataResolver,
                                           ExplicitKeySignatureTrustEngine explicitKeySignatureTrustEngine) {
-            this.metricName = metricName;
             this.metadataResolver = metadataResolver;
             this.explicitKeySignatureTrustEngine = explicitKeySignatureTrustEngine;
         }
@@ -198,12 +201,8 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
             return explicitKeySignatureTrustEngine;
         }
 
-        private MetadataResolver getMetadataResolver() {
+        private JerseyClientMetadataResolver getMetadataResolver() {
             return metadataResolver;
-        }
-
-        private String getMetricName() {
-            return metricName;
         }
     }
 }

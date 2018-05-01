@@ -3,5 +3,4 @@ dependencies {
             project(':saml-extensions'),
             project(':saml-serializers'),
             project(':saml-security')
-
 }

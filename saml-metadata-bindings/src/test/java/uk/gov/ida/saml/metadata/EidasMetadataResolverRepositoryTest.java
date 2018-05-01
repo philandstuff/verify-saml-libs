@@ -72,16 +72,13 @@ public class EidasMetadataResolverRepositoryTest {
     private Timer timer;
 
     @Mock
-    private MetadataResolver metadataResolver;
+    private JerseyClientMetadataResolver metadataResolver;
 
     @Mock
     private MetadataSignatureTrustEngineFactory metadataSignatureTrustEngineFactory;
 
     @Mock
     private ExplicitKeySignatureTrustEngine explicitKeySignatureTrustEngine;
-
-    @Mock
-    private MetricRegistry metricRegistry;
 
     @Captor
     private ArgumentCaptor<MetadataResolverConfiguration> metadataResolverConfigurationCaptor;
@@ -105,7 +102,6 @@ public class EidasMetadataResolverRepositoryTest {
 
     @Test
     public void shouldCreateMetadataResolverWhenTrustAnchorIsValid() throws ParseException, KeyStoreException, CertificateEncodingException {
-
         List<String> stringCertChain = Arrays.asList(TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT,
                 TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_CERT);
 
@@ -197,8 +193,6 @@ public class EidasMetadataResolverRepositoryTest {
                 metadataSignatureTrustEngineFactory,
                 metadataResolverConfigBuilderMock);
 
-        when(environment.metrics()).thenReturn(metricRegistry);
-
         trustAnchors.remove(0);
         JWK jwk1 = createJWK(toAddEntityId, Collections.singletonList(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT));
         trustAnchors.add(jwk1);
@@ -213,9 +207,6 @@ public class EidasMetadataResolverRepositoryTest {
         assertThat(metadataResolverRepository.getMetadataResolver(toAddEntityId)).isPresent();
 
         verify(dropwizardMetadataResolverFactory, times(2)).createMetadataResolver(any(), metadataResolverConfigurationCaptor.capture());
-        verify(environment.metrics()).remove(stringArgumentCaptor.capture());
-
-        assertThat(stringArgumentCaptor.getValue()).isEqualTo(mockClientName);
         assertThat(metadataResolverConfigurationCaptor.getValue()).isEqualTo(configMock2);
     }
 

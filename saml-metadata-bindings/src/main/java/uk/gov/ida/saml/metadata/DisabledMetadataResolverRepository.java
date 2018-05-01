@@ -18,7 +18,7 @@ public class DisabledMetadataResolverRepository implements MetadataResolverRepos
     }
 
     @Override
-    public List<String> getEntityIdsWithResolver() {
+    public List<String> getResolverEntityIds() {
         return ImmutableList.of();
     }
 

@@ -40,7 +40,7 @@ public class EidasTrustAnchorHealthCheck extends HealthCheck {
     }
 
     private List<String> getErrorsCreatingMetadataResolvers(List<String> trustAnchorEntityIds) {
-        List<String> entityIdsWithResolver = metadataResolverRepository.getEntityIdsWithResolver();
+        List<String> entityIdsWithResolver = metadataResolverRepository.getResolverEntityIds();
 
         if (trustAnchorEntityIds.size() > entityIdsWithResolver.size()) {
             List<String> missingMetadataResolverEntityIds = new ArrayList<>(trustAnchorEntityIds);

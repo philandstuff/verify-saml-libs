@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface MetadataResolverRepository {
     Optional<MetadataResolver> getMetadataResolver(String entityId);
 
-    List<String> getEntityIdsWithResolver();
+    List<String> getResolverEntityIds();
 
     Optional<ExplicitKeySignatureTrustEngine> getSignatureTrustEngine(String entityId);
 

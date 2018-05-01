@@ -61,7 +61,7 @@ public class EidasTrustAnchorHealthCheckTest {
                 entityId3, thirdMetadataResolver
         );
 
-        when(metadataResolverRepository.getEntityIdsWithResolver()).thenReturn(entityIds);
+        when(metadataResolverRepository.getResolverEntityIds()).thenReturn(entityIds);
         when(metadataResolverRepository.getMetadataResolvers()).thenReturn(metadataResolverMap);
 
         Result result = eidasTrustAnchorHealthCheck.check();
@@ -83,7 +83,7 @@ public class EidasTrustAnchorHealthCheckTest {
 
         ImmutableMap<String, MetadataResolver> metadataResolverMap = ImmutableMap.of(entityId1, validMetadataResolver);
 
-        when(metadataResolverRepository.getEntityIdsWithResolver()).thenReturn(asList(entityId1));
+        when(metadataResolverRepository.getResolverEntityIds()).thenReturn(asList(entityId1));
         when(metadataResolverRepository.getMetadataResolvers()).thenReturn(metadataResolverMap);
 
         Result result = eidasTrustAnchorHealthCheck.check();
@@ -104,7 +104,7 @@ public class EidasTrustAnchorHealthCheckTest {
         MetadataResolver validMetadataResolver2 = getValidMetadataResolver(entityId2);
         ImmutableMap<String, MetadataResolver> metadataResolverMap = ImmutableMap.of(entityId1, validMetadataResolver1, entityId2, validMetadataResolver2);
 
-        when(metadataResolverRepository.getEntityIdsWithResolver()).thenReturn(entityIds);
+        when(metadataResolverRepository.getResolverEntityIds()).thenReturn(entityIds);
         when(metadataResolverRepository.getMetadataResolvers()).thenReturn(metadataResolverMap);
 
         Result result = eidasTrustAnchorHealthCheck.check();

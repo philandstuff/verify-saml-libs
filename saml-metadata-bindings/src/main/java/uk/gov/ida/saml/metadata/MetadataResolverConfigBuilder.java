@@ -45,10 +45,7 @@ public class MetadataResolverConfigBuilder {
     }
 
     private String getClientName(String entityId, String clientName) {
-        return String.format("%s - %s - %s",
-                clientName,
-                entityId,
-                DateTime.now().getMillis());
+        return String.format("%s - %s", clientName, entityId);
     }
 
     private DynamicTrustStoreConfiguration trustStoreConfig(JWK trustAnchor) throws CertificateException {

@@ -1,7 +1,6 @@
 package uk.gov.ida.saml.metadata;
 
 import org.opensaml.core.xml.XMLObject;
-import org.opensaml.saml.metadata.resolver.filter.FilterException;
 import org.opensaml.saml.metadata.resolver.filter.MetadataFilter;
 import org.opensaml.saml.saml2.metadata.EntitiesDescriptor;
 import org.opensaml.saml.saml2.metadata.EntityDescriptor;
@@ -11,7 +10,10 @@ import org.opensaml.xmlsec.signature.KeyInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.common.shared.security.verification.CertificateChainValidator;
+import uk.gov.ida.saml.metadata.exception.CertificateChainValidationFailedException;
 import uk.gov.ida.saml.metadata.exception.CertificateConversionException;
+import uk.gov.ida.saml.metadata.exception.EntityDescriptorListEmptyException;
+import uk.gov.ida.saml.metadata.exception.RoleDescriptorListEmptyException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -77,7 +79,7 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
         return metadata;
     }
 
-    private void processEntityDescriptor(@Nonnull EntityDescriptor entityDescriptor) throws FilterException {
+    private void processEntityDescriptor(@Nonnull EntityDescriptor entityDescriptor) throws RoleDescriptorListEmptyException {
         final String entityID = entityDescriptor.getEntityID();
         LOG.trace("Processing EntityDescriptor: {}", entityID);
 
@@ -88,7 +90,7 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
                 if (getRole().equals(roleDescriptor.getElementQName())) {
                     try {
                         performCertificateChainValidation(roleDescriptor);
-                    } catch (final FilterException e) {
+                    } catch (final CertificateChainValidationFailedException e) {
                         LOG.error("RoleDescriptor '{}' subordinate to entity '{}' failed certificate chain validation, " +
                                   "removing from metadata provider", roleDescriptor.getElementQName(), entityID);
                         return true;
@@ -98,11 +100,11 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
             });
 
         if (entityDescriptor.getRoleDescriptors().isEmpty()) {
-            throw new FilterException("Role Descriptors list is empty");
+            throw new RoleDescriptorListEmptyException("Role Descriptors list is empty");
         }
     }
 
-    private void processEntityGroup(@Nonnull EntitiesDescriptor entitiesDescriptor) throws FilterException {
+    private void processEntityGroup(@Nonnull EntitiesDescriptor entitiesDescriptor) throws EntityDescriptorListEmptyException {
         final String name = getGroupName(entitiesDescriptor);
         LOG.trace("Processing EntitiesDescriptor group: {}", name);
 
@@ -114,8 +116,8 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
             entityDescriptor -> {
                 try {
                     processEntityDescriptor(entityDescriptor);
-                } catch (final FilterException e) {
-                    LOG.error("EntityDescriptor '{}' failed certificate chain validation, removing from metadata provider", entityDescriptor.getEntityID());
+                } catch (final RoleDescriptorListEmptyException e) {
+                    LOG.error("EntityDescriptor '{}' has empty role descriptor list, removing from metadata provider", entityDescriptor.getEntityID());
                     toRemove.add(entityDescriptor);
                 }
         });
@@ -131,8 +133,8 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
                 LOG.trace("Processing EntitiesDescriptor member: {}", childName);
                 try {
                     processEntityGroup(internalEntitiesDescriptor);
-                } catch (final FilterException e) {
-                    LOG.error("EntitiesDescriptor '{}' failed certificate chain validation, removing from metadata provider", childName);
+                } catch (final EntityDescriptorListEmptyException e) {
+                    LOG.error("EntitiesDescriptor '{}' has empty entity descriptor list, removing from metadata provider", childName);
                     toRemove.add(internalEntitiesDescriptor);
                 }
         });
@@ -142,7 +144,7 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
         }
 
         if (entitiesDescriptor.getEntityDescriptors().isEmpty() && entitiesDescriptor.getEntitiesDescriptors().isEmpty()) {
-            throw new FilterException("Entity Descriptors list and Entities Descriptors list are empty");
+            throw new EntityDescriptorListEmptyException("Entity Descriptors list and Entities Descriptors list are empty");
         }
     }
 
@@ -158,14 +160,14 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
         return "(unnamed)";
     }
 
-    private void performCertificateChainValidation(final RoleDescriptor roleDescriptor) throws FilterException {
+    private void performCertificateChainValidation(final RoleDescriptor roleDescriptor) throws CertificateChainValidationFailedException {
         for (final KeyDescriptor keyDescriptor : roleDescriptor.getKeyDescriptors()) {
             KeyInfo keyInfo = keyDescriptor.getKeyInfo();
             try {
                 for (final X509Certificate certificate : getCertificates(keyInfo)) {
                     if (!getCertificateChainValidator().validate(certificate, getKeyStore()).isValid()) {
                         LOG.error("Certificate chain validation failed for metadata entry {}", certificate.getSubjectDN());
-                        throw new FilterException("Certificate chain validation failed for metadata entry " + certificate.getSubjectDN());
+                        throw new CertificateChainValidationFailedException("Certificate chain validation failed for metadata entry " + certificate.getSubjectDN());
                     }
                 }
             } catch (CertificateException e) {

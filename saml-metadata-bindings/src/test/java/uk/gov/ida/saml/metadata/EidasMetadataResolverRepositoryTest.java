@@ -4,11 +4,9 @@ import com.codahale.metrics.MetricRegistry;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.util.X509CertUtils;
-
 import io.dropwizard.setup.Environment;
 import net.minidev.json.JSONObject;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.joda.time.DateTime;
@@ -50,7 +48,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EidasMetadataResolverRepositoryTest {
@@ -108,7 +109,8 @@ public class EidasMetadataResolverRepositoryTest {
         List<String> stringCertChain = Arrays.asList(TestCertificateStrings.STUB_COUNTRY_PUBLIC_PRIMARY_CERT,
                 TestCertificateStrings.STUB_COUNTRY_PUBLIC_SECONDARY_CERT);
 
-        JWK trustAnchor = createJWK("http://signin.gov.uk/entity/id", stringCertChain);
+        String entityId = "http://signin.gov.uk/entity/id";
+        JWK trustAnchor = createJWK(entityId, stringCertChain);
         trustAnchors.add(trustAnchor);
 
         when(metadataConfiguration.getMetadataSourceUri()).thenReturn(UriBuilder.fromUri("https://source.com").build());
@@ -127,7 +129,7 @@ public class EidasMetadataResolverRepositoryTest {
         assertThat(createdMetadataResolver).isEqualTo(metadataResolver);
         assertArrayEquals(expectedTrustStoreCertificate, actualTrustStoreCertificate);
         assertArrayEquals(expectedTrustStoreCACertificate, actualTrustStoreCACertificate);
-        assertThat(metadataResolverConfiguration.getUri().toString()).isEqualTo("https://source.com/http%253A%252F%252Fsignin.gov.uk%252Fentity%252Fid");
+        assertThat(metadataResolverConfiguration.getUri().toString()).isEqualTo("https://source.com/" + ResourceEncoder.entityIdAsResource(entityId));
         assertThat(metadataResolverRepository.getSignatureTrustEngine(trustAnchor.getKeyID())).isEqualTo(Optional.of(explicitKeySignatureTrustEngine));
     }
 

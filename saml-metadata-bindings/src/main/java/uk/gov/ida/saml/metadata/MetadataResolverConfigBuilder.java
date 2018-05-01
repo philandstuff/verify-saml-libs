@@ -37,7 +37,7 @@ public class MetadataResolverConfigBuilder {
         );
     }
 
-    private URI fullUri(URI sourceUri, String entityId) throws UnsupportedEncodingException {
+    private URI fullUri(URI sourceUri, String entityId) {
         return UriBuilder
                 .fromUri(sourceUri)
                 .path(entityIdAsResource(entityId))

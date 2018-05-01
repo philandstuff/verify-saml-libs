@@ -3,6 +3,7 @@ import org.junit.Test;
 import uk.gov.ida.saml.metadata.EidasMetadataConfiguration;
 import uk.gov.ida.saml.metadata.MetadataResolverConfigBuilder;
 import uk.gov.ida.saml.metadata.MetadataResolverConfiguration;
+import uk.gov.ida.saml.metadata.ResourceEncoder;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.UnsupportedEncodingException;
@@ -21,13 +22,14 @@ public class MetadataResolverConfigBuilderTest {
 
     @Test
     public void shouldConcatenateMetadataSourceUriAndMetadataEntityIdIntoEncodedFullUri() throws CertificateException, UnsupportedEncodingException {
-        when(mockTrustAnchor.getKeyID()).thenReturn("https://example.com/ServiceMetadata");
+        String entityId = "https://example.com/ServiceMetadata";
+        when(mockTrustAnchor.getKeyID()).thenReturn(entityId);
 
         when(mockConfiguration.getMetadataSourceUri()).thenReturn(UriBuilder.fromUri("https://source.com").build());
 
         MetadataResolverConfiguration metadataResolverConfiguration =
                 testBuilder.createMetadataResolverConfiguration(mockTrustAnchor, mockConfiguration);
-        URI targetUri = UriBuilder.fromUri("https://source.com/https%253A%252F%252Fexample.com%252FServiceMetadata").build();
+        URI targetUri = UriBuilder.fromUri("https://source.com/" + ResourceEncoder.entityIdAsResource(entityId)).build();
         assertThat(metadataResolverConfiguration.getUri()).isEqualTo(targetUri);
     }
 }

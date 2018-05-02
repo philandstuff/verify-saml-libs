@@ -6,6 +6,26 @@ import java.net.URI;
 import java.util.Optional;
 
 public abstract class MetadataConfiguration implements MetadataResolverConfiguration {
+
+    /* HTTP{S} URL the SAML metadata can be loaded from */
+    private URI uri;
+
+    /* Used to set {@link org.opensaml.saml2.metadata.provider.AbstractReloadingMetadataProvider#minRefreshDelay} */
+    private Long minRefreshDelay;
+
+    /* Used to set {@link org.opensaml.saml2.metadata.provider.AbstractReloadingMetadataProvider#maxRefreshDelay} */
+    private Long maxRefreshDelay;
+
+    /*
+     * What entityId can be expected to reliably appear in the SAML metadata?
+     * Used to provide a healthcheck {@link uk.gov.ida.saml.dropwizard.metadata.MetadataHealthCheck}
+     */
+    private String expectedEntityId;
+
+    private JerseyClientConfiguration client;
+    private String jerseyClientName;
+    private String hubFederationId;
+
     public MetadataConfiguration(URI uri,
         Long minRefreshDelay,
         Long maxRefreshDelay,
@@ -22,27 +42,6 @@ public abstract class MetadataConfiguration implements MetadataResolverConfigura
         this.jerseyClientName = Optional.ofNullable(jerseyClientName).orElse("MetadataClient");
         this.hubFederationId = Optional.ofNullable(hubFederationId).orElse("VERIFY-FEDERATION");
     }
-
-    /* HTTP{S} URL the SAML metadata can be loaded from */
-    private URI uri;
-
-    /* Used to set {@link org.opensaml.saml2.metadata.provider.AbstractReloadingMetadataProvider#minRefreshDelay} */
-    private Long minRefreshDelay;
-
-    /* Used to set {@link org.opensaml.saml2.metadata.provider.AbstractReloadingMetadataProvider#maxRefreshDelay} */
-    private Long maxRefreshDelay;
-
-    /*
-    * What entityId can be expected to reliably appear in the SAML metadata?
-    * Used to provide a healthcheck {@link uk.gov.ida.saml.dropwizard.metadata.MetadataHealthCheck}
-    */
-    private String expectedEntityId;
-
-    private JerseyClientConfiguration client;
-
-    private String jerseyClientName;
-
-    private String hubFederationId;
 
     @Override
     public URI getUri() {

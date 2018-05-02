@@ -10,16 +10,21 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.security.KeyStore;
+import java.util.Optional;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TrustStoreBackedMetadataConfiguration extends MetadataConfiguration {
+public class MultiTrustStoresBackedMetadataConfiguration extends TrustStoreBackedMetadataConfiguration {
 
     @NotNull
     @Valid
-    private TrustStoreConfiguration trustStore;
+    private TrustStoreConfiguration hubTrustStore;
+
+    @NotNull
+    @Valid
+    private TrustStoreConfiguration idpTrustStore;
 
     @JsonCreator
-    public TrustStoreBackedMetadataConfiguration(
+    public MultiTrustStoresBackedMetadataConfiguration(
         @JsonProperty("uri") @JsonAlias({ "url" }) URI uri,
         @JsonProperty("minRefreshDelay") Long minRefreshDelay,
         @JsonProperty("maxRefreshDelay") Long maxRefreshDelay,
@@ -27,14 +32,22 @@ public class TrustStoreBackedMetadataConfiguration extends MetadataConfiguration
         @JsonProperty("client") JerseyClientConfiguration client,
         @JsonProperty("jerseyClientName") String jerseyClientName,
         @JsonProperty("hubFederationId") String hubFederationId,
-        @JsonProperty("trustStore") TrustStoreConfiguration trustStore
-    ) {
-        super(uri, minRefreshDelay, maxRefreshDelay, expectedEntityId, client, jerseyClientName, hubFederationId);
-        this.trustStore = trustStore;
+        @JsonProperty("trustStore") TrustStoreConfiguration trustStore,
+        @JsonProperty("hubTrustStore") TrustStoreConfiguration hubTrustStore,
+        @JsonProperty("idpTrustStore") TrustStoreConfiguration idpTrustStore) {
+
+        super(uri, minRefreshDelay, maxRefreshDelay, expectedEntityId, client, jerseyClientName, hubFederationId, trustStore);
+        this.hubTrustStore = hubTrustStore;
+        this.idpTrustStore = idpTrustStore;
     }
 
     @Override
-    public KeyStore getTrustStore() {
-        return trustStore.getTrustStore();
+    public Optional<KeyStore> getHubTrustStore() {
+        return Optional.of(hubTrustStore.getTrustStore());
+    }
+
+    @Override
+    public Optional<KeyStore> getIdpTrustStore() {
+        return Optional.of(idpTrustStore.getTrustStore());
     }
 }

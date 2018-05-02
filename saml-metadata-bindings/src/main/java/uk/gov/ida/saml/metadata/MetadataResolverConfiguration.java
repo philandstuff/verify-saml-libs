@@ -4,22 +4,31 @@ import io.dropwizard.client.JerseyClientConfiguration;
 
 import java.net.URI;
 import java.security.KeyStore;
+import java.util.Optional;
 
 public interface MetadataResolverConfiguration {
 
-    public KeyStore getTrustStore();
+    KeyStore getTrustStore();
 
-    public URI getUri();
+    default Optional<KeyStore> getHubTrustStore() {
+        return Optional.empty();
+    }
 
-    public Long getMinRefreshDelay();
+    default Optional<KeyStore> getIdpTrustStore() {
+        return Optional.empty();
+    }
 
-    public Long getMaxRefreshDelay();
+    URI getUri();
 
-    public String getExpectedEntityId();
+    Long getMinRefreshDelay();
 
-    public JerseyClientConfiguration getJerseyClientConfiguration();
+    Long getMaxRefreshDelay();
 
-    public String getJerseyClientName();
+    String getExpectedEntityId();
 
-    public String getHubFederationId();
+    JerseyClientConfiguration getJerseyClientConfiguration();
+
+    String getJerseyClientName();
+
+    String getHubFederationId();
 }

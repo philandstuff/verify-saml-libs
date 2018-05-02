@@ -70,8 +70,8 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
             } else {
                 LOG.error("Internal error, metadata object was of an unsupported type: {}", metadata.getClass().getName());
             }
-        } catch (Throwable t) {
-            LOG.error("Saw fatal error validating certificate chain, metadata will be filtered out", t);
+        } catch (RoleDescriptorListEmptyException | EntityDescriptorListEmptyException | CertificateConversionException e) {
+            LOG.error("Saw fatal error validating certificate chain, metadata will be filtered out", e);
             return null;
         }
 

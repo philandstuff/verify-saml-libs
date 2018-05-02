@@ -125,6 +125,7 @@ public class CertificateChainValidationFilterTest {
         assertThat(getEntityIdsFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME)).containsOnlyElementsOf(HUB_ENTITY_IDS);
         assertThat(getKeyNamesFromMetadata(metadata, SPSSODescriptor.DEFAULT_ELEMENT_NAME, TestEntityIds.HUB_ENTITY_ID)).containsOnlyElementsOf(HUB_KEY_NAMES);
         assertThat(getEntityIdsFromMetadata(metadata, IDPSSODescriptor.DEFAULT_ELEMENT_NAME)).containsOnlyElementsOf(IDP_ENTITY_IDS);
+        assertThat(getEntityIdsFromMetadata(metadata, IDPSSODescriptor.DEFAULT_ELEMENT_NAME)).doesNotContain(TestEntityIds.TEST_RP);
     }
 
     @Test

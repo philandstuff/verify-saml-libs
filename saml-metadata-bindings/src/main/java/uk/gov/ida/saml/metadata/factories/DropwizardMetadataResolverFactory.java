@@ -29,23 +29,32 @@ public class DropwizardMetadataResolverFactory {
     private final MetadataClientFactory metadataClientFactory = new MetadataClientFactory();
     private final CertificateChainValidator certificateChainValidator = new CertificateChainValidator(new PKIXParametersProvider(), new X509CertificateFactory());
 
-    public MetadataResolver createMetadataResolver(Environment environment, MetadataResolverConfiguration metadataConfiguration) {
+    public MetadataResolver createMetadataResolver(
+            Environment environment,
+            MetadataResolverConfiguration metadataConfiguration) {
         return createMetadataResolver(environment, metadataConfiguration, true);
     }
 
-    public MetadataResolver createMetadataResolverWithoutSignatureValidation(Environment environment, MetadataResolverConfiguration metadataConfiguration) {
+    public MetadataResolver createMetadataResolverWithoutSignatureValidation(
+            Environment environment,
+            MetadataResolverConfiguration metadataConfiguration) {
         return createMetadataResolver(environment, metadataConfiguration, false);
     }
 
     public MetadataResolver createMetadataResolver(
-        final Environment environment,
-        final MetadataResolverConfiguration metadataConfiguration,
-        final boolean validateSignatures) {
+            Environment environment,
+            MetadataResolverConfiguration metadataConfiguration,
+            boolean validateSignatures) {
+        return createMetadataResolverWithClient(metadataConfiguration, validateSignatures, metadataClientFactory.getClient(environment, metadataConfiguration));
+    }
 
+    public MetadataResolver createMetadataResolverWithClient(
+            MetadataResolverConfiguration metadataConfiguration,
+            boolean validateSignatures,
+            Client client) {
         URI uri = metadataConfiguration.getUri();
         Long minRefreshDelay = metadataConfiguration.getMinRefreshDelay();
         Long maxRefreshDelay = metadataConfiguration.getMaxRefreshDelay();
-        Client client = metadataClientFactory.getClient(environment, metadataConfiguration);
 
         return metadataResolverFactory.create(
             client,

@@ -16,9 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.eidas.trustanchor.CountryTrustAnchor;
 import uk.gov.ida.saml.metadata.factories.DropwizardMetadataResolverFactory;
+import uk.gov.ida.saml.metadata.factories.MetadataClientFactory;
 import uk.gov.ida.saml.metadata.factories.MetadataSignatureTrustEngineFactory;
 
 import javax.inject.Inject;
+import javax.ws.rs.client.Client;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -42,11 +44,11 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
     private final MetadataResolverConfigBuilder metadataResolverConfigBuilder;
     private ImmutableMap<String, MetadataResolverContainer> metadataResolvers = ImmutableMap.of();
     private List<JWK> trustAnchors = new ArrayList<>();
-    private final Environment environment;
     private final EidasMetadataConfiguration eidasMetadataConfiguration;
     private final Timer timer;
     private final MetadataSignatureTrustEngineFactory metadataSignatureTrustEngineFactory;
     private long delayBeforeNextRefresh;
+    private Client client;
 
     @Inject
     public EidasMetadataResolverRepository(EidasTrustAnchorResolver trustAnchorResolver,
@@ -55,14 +57,22 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
                                            DropwizardMetadataResolverFactory dropwizardMetadataResolverFactory,
                                            Timer timer,
                                            MetadataSignatureTrustEngineFactory metadataSignatureTrustEngineFactory,
-                                           MetadataResolverConfigBuilder metadataResolverConfigBuilder) {
+                                           MetadataResolverConfigBuilder metadataResolverConfigBuilder,
+                                           MetadataClientFactory metadataClientFactory
+    ) {
         this.timer = timer;
-        this.environment = environment;
         this.trustAnchorResolver = trustAnchorResolver;
         this.eidasMetadataConfiguration = eidasMetadataConfiguration;
         this.dropwizardMetadataResolverFactory = dropwizardMetadataResolverFactory;
         this.metadataSignatureTrustEngineFactory = metadataSignatureTrustEngineFactory;
         this.metadataResolverConfigBuilder = metadataResolverConfigBuilder;
+
+        client = metadataClientFactory.getClient(
+            environment,
+            eidasMetadataConfiguration.getJerseyClientConfiguration(),
+            eidasMetadataConfiguration.getJerseyClientName()
+        );
+
         refresh();
     }
 
@@ -146,22 +156,22 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
     }
 
     private MetadataResolverContainer createMetadataResolverContainer(String resolverToAddEntityId) throws CertificateException, UnsupportedEncodingException, ComponentInitializationException {
-            JWK trustAnchor = getTrustAnchorFromKeyId(resolverToAddEntityId);
+        JWK trustAnchor = getTrustAnchorFromKeyId(resolverToAddEntityId);
 
-            Collection<String> errors = CountryTrustAnchor.findErrors(trustAnchor);
+        Collection<String> errors = CountryTrustAnchor.findErrors(trustAnchor);
 
-            if (!errors.isEmpty()) {
-                throw new Error(String.format("Managed to generate an invalid anchor: %s", String.join(", ", errors)));
-            }
-
-            Date metadataSigningCertExpiryDate = sortCertsByDate(trustAnchor).get(0).getNotAfter();
-            Date nextRunTime = DateTime.now().plus(delayBeforeNextRefresh).toDate();
-            if (metadataSigningCertExpiryDate.before(nextRunTime)) {
-                setShortRefreshDelay();
-            }
-
-            return createMetadataResolverContainer(trustAnchor);
+        if (!errors.isEmpty()) {
+            throw new Error(String.format("Managed to generate an invalid anchor: %s", String.join(", ", errors)));
         }
+
+        Date metadataSigningCertExpiryDate = sortCertsByDate(trustAnchor).get(0).getNotAfter();
+        Date nextRunTime = DateTime.now().plus(delayBeforeNextRefresh).toDate();
+        if (metadataSigningCertExpiryDate.before(nextRunTime)) {
+            setShortRefreshDelay();
+        }
+
+        return createMetadataResolverContainer(trustAnchor);
+    }
 
     @Override
     public List<X509Certificate> sortCertsByDate(JWK trustAnchor){
@@ -179,7 +189,7 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
     
     private MetadataResolverContainer createMetadataResolverContainer(JWK trustAnchor) throws CertificateException, ComponentInitializationException, UnsupportedEncodingException {
         MetadataResolverConfiguration metadataResolverConfiguration = metadataResolverConfigBuilder.createMetadataResolverConfiguration(trustAnchor, eidasMetadataConfiguration);
-        JerseyClientMetadataResolver metadataResolver = (JerseyClientMetadataResolver) dropwizardMetadataResolverFactory.createMetadataResolver(environment, metadataResolverConfiguration);
+        JerseyClientMetadataResolver metadataResolver = (JerseyClientMetadataResolver) dropwizardMetadataResolverFactory.createMetadataResolverWithClient(metadataResolverConfiguration, true, client);
         return new MetadataResolverContainer(metadataResolver, metadataSignatureTrustEngineFactory.createSignatureTrustEngine(metadataResolver));
     }
 

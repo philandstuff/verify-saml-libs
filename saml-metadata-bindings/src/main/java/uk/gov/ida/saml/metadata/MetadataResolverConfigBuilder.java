@@ -31,7 +31,7 @@ public class MetadataResolverConfigBuilder {
                 configuration.getMaxRefreshDelay(),
                 null,
                 configuration.getJerseyClientConfiguration(),
-                getClientName(trustAnchor.getKeyID(), configuration.getJerseyClientName()),
+                configuration.getJerseyClientName(),
                 null,
                 trustStoreConfig(trustAnchor)
         );
@@ -42,10 +42,6 @@ public class MetadataResolverConfigBuilder {
                 .fromUri(sourceUri)
                 .path(entityIdAsResource(entityId))
                 .build();
-    }
-
-    private String getClientName(String entityId, String clientName) {
-        return String.format("%s - %s", clientName, entityId);
     }
 
     private DynamicTrustStoreConfiguration trustStoreConfig(JWK trustAnchor) throws CertificateException {

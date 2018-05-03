@@ -70,7 +70,7 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
         client = metadataClientFactory.getClient(
             environment,
             eidasMetadataConfiguration.getJerseyClientConfiguration(),
-            eidasMetadataConfiguration.getJerseyClientName()
+            eidasMetadataConfiguration.getJerseyClientName() + "-resolvers"
         );
 
         refresh();

@@ -62,14 +62,14 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
         try {
             if (metadata instanceof EntityDescriptor) {
                 EntityDescriptor entityDescriptor = (EntityDescriptor) metadata;
-                processEntityDescriptor(entityDescriptor);
+                filterOutUntrustedRoleDescriptors(entityDescriptor);
                 if (entityDescriptor.getRoleDescriptors().isEmpty()) {
                     LOG.warn("EntityDescriptor '{}' has empty role descriptor list, metadata will be filtered out", entityDescriptor.getEntityID());
                     return null;
                 }
             } else if (metadata instanceof EntitiesDescriptor) {
                 EntitiesDescriptor entitiesDescriptor = (EntitiesDescriptor) metadata;
-                processEntityGroup(entitiesDescriptor);
+                filterOutUntrustedEntityDescriptors(entitiesDescriptor);
                 if (entitiesDescriptor.getEntityDescriptors().isEmpty()) {
                     LOG.warn("EntitiesDescriptor '{}' has empty entity descriptor list, metadata will be filtered out");
                     return null;
@@ -86,7 +86,7 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
         return metadata;
     }
 
-    private void processEntityGroup(@Nonnull EntitiesDescriptor entitiesDescriptor) {
+    private void filterOutUntrustedEntityDescriptors(@Nonnull EntitiesDescriptor entitiesDescriptor) {
         final String name = getGroupName(entitiesDescriptor);
         LOG.trace("Processing EntitiesDescriptor group: {}", name);
 
@@ -96,7 +96,7 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
 
         entitiesDescriptor.getEntityDescriptors().forEach(
         entityDescriptor -> {
-            processEntityDescriptor(entityDescriptor);
+            filterOutUntrustedRoleDescriptors(entityDescriptor);
             if (entityDescriptor.getRoleDescriptors().isEmpty()) {
                 LOG.warn("EntityDescriptor '{}' has empty role descriptor list, removing from metadata", entityDescriptor.getEntityID());
                 toRemove.add(entityDescriptor);
@@ -110,7 +110,7 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
     }
 
 
-    private void processEntityDescriptor(@Nonnull EntityDescriptor entityDescriptor) {
+    private void filterOutUntrustedRoleDescriptors(@Nonnull EntityDescriptor entityDescriptor) {
         final String entityID = entityDescriptor.getEntityID();
         LOG.trace("Processing EntityDescriptor: {}", entityID);
 
@@ -119,7 +119,7 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
         entityDescriptor.getRoleDescriptors()
             .removeIf(roleDescriptor -> {
                 if (getRole().equals(roleDescriptor.getElementQName())) {
-                    processKeyDescriptor(roleDescriptor);
+                    filterOutUntrustedKeyDescriptors(roleDescriptor);
                     if (roleDescriptor.getKeyDescriptors().isEmpty()) {
                         LOG.warn("KeyDescriptor '{}' has empty key descriptor list, removing from metadata", entityID);
                         return true;
@@ -129,7 +129,7 @@ public final class CertificateChainValidationFilter implements MetadataFilter {
             });
     }
 
-    private void processKeyDescriptor(@Nonnull RoleDescriptor roleDescriptor) {
+    private void filterOutUntrustedKeyDescriptors(@Nonnull RoleDescriptor roleDescriptor) {
         roleDescriptor.getKeyDescriptors().removeIf(
             keyDescriptor -> {
                 KeyInfo keyInfo = keyDescriptor.getKeyInfo();

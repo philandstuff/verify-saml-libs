@@ -3,5 +3,6 @@ dependencies {
             configurations.security,
             project(':saml-extensions')
 
-    testCompile configurations.test_deps
+    testCompile configurations.test_deps,
+        project(':saml-metadata-bindings-test')
 }

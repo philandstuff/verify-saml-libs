@@ -60,6 +60,30 @@ public class EntityDescriptorFactory {
         }
     }
 
+    public EntityDescriptor hubEntityDescriptorWithWrongUsageCertificates() {
+        KeyDescriptor wrongUsageKeyDescriptorOne = createKeyDescriptor(TestCertificateStrings.HUB_TEST_PUBLIC_SIGNING_CERT, SIGNING_ONE, ENCRYPTION_USAGE);
+        KeyDescriptor wrongUsageKeyDescriptorTwo = createKeyDescriptor(TestCertificateStrings.HUB_TEST_SECONDARY_PUBLIC_SIGNING_CERT, SIGNING_TWO, ENCRYPTION_USAGE);
+        KeyDescriptor encryptionKeyDescriptorThree = createKeyDescriptor(TestCertificateStrings.HUB_TEST_PUBLIC_ENCRYPTION_CERT, ENCRYPTION, ENCRYPTION_USAGE);
+        SPSSODescriptor spssoDescriptor = SPSSODescriptorBuilder.anSpServiceDescriptor()
+                .addKeyDescriptor(wrongUsageKeyDescriptorOne)
+                .addKeyDescriptor(wrongUsageKeyDescriptorTwo)
+                .addKeyDescriptor(encryptionKeyDescriptorThree)
+                .withoutDefaultSigningKey()
+                .withoutDefaultEncryptionKey().build();
+        try {
+            return EntityDescriptorBuilder.anEntityDescriptor()
+                    .withEntityId(TestEntityIds.HUB_ENTITY_ID)
+                    .addSpServiceDescriptor(spssoDescriptor)
+                    .withIdpSsoDescriptor(null)
+                    .withValidUntil(DateTime.now().plusWeeks(2))
+                    .withSignature(null)
+                    .withoutSigning()
+                    .build();
+        } catch (MarshallingException | SignatureException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     private KeyDescriptor createKeyDescriptor(final String testCertificateString, final String keyName, final String usage) {
         X509Certificate x509Certificate = X509CertificateBuilder.aX509Certificate().withCert(testCertificateString).build();
         X509Data x509Data = X509DataBuilder.aX509Data().withX509Certificate(x509Certificate).build();

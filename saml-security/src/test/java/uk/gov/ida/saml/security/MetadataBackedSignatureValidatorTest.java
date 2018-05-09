@@ -22,6 +22,8 @@ import uk.gov.ida.common.shared.security.verification.CertificateChainValidator;
 import uk.gov.ida.common.shared.security.verification.CertificateValidity;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
 import uk.gov.ida.saml.core.test.TestEntityIds;
+import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
+import uk.gov.ida.saml.metadata.test.factories.metadata.MetadataFactory;
 import uk.gov.ida.saml.security.saml.OpenSAMLMockitoRunner;
 import uk.gov.ida.saml.security.saml.StringEncoding;
 import uk.gov.ida.saml.security.saml.TestCredentialFactory;
@@ -38,6 +40,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -58,6 +61,14 @@ public class MetadataBackedSignatureValidatorTest {
         Credential signingCredential = new TestCredentialFactory(TestCertificateStrings.HUB_TEST_PUBLIC_SIGNING_CERT, TestCertificateStrings.HUB_TEST_PRIVATE_SIGNING_KEY).getSigningCredential();
         final Assertion assertion = AssertionBuilder.anAssertion().withSignature(SignatureBuilder.aSignature().withSigningCredential(signingCredential).build()).build();
         assertThat(metadataBackedSignatureValidator.validate(assertion, issuerId, SPSSODescriptor.DEFAULT_ELEMENT_NAME)).isEqualTo(true);
+    }
+
+    @Test
+    public void shouldFailIfCertificatesHaveTheWrongUsage() throws Exception {
+        MetadataBackedSignatureValidator metadataBackedSignatureValidator = createMetadataBackedSignatureValidatorWithWrongUsageCertificates();
+        Credential signingCredential = new TestCredentialFactory(TestCertificateStrings.HUB_TEST_PUBLIC_SIGNING_CERT, TestCertificateStrings.HUB_TEST_PRIVATE_SIGNING_KEY).getSigningCredential();
+        final Assertion assertion = AssertionBuilder.anAssertion().withSignature(SignatureBuilder.aSignature().withSigningCredential(signingCredential).build()).build();
+        assertThat(metadataBackedSignatureValidator.validate(assertion, issuerId, SPSSODescriptor.DEFAULT_ELEMENT_NAME)).isEqualTo(false);
     }
 
     @Test
@@ -93,6 +104,10 @@ public class MetadataBackedSignatureValidatorTest {
         return MetadataBackedSignatureValidator.withoutCertificateChainValidation(getExplicitKeySignatureTrustEngine());
     }
 
+    private MetadataBackedSignatureValidator createMetadataBackedSignatureValidatorWithWrongUsageCertificates() throws ComponentInitializationException {
+        return MetadataBackedSignatureValidator.withoutCertificateChainValidation(getExplicitKeySignatureTrustEngineEncryptionOnly());
+    }
+
     private MetadataBackedSignatureValidator createMetadataBackedSignatureValidatorWithChainValidation(CertificateChainValidator certificateChainValidator) throws ComponentInitializationException {
         ExplicitKeySignatureTrustEngine signatureTrustEngine = getExplicitKeySignatureTrustEngine();
         CertificateChainEvaluableCriterion certificateChainEvaluableCriterion = new CertificateChainEvaluableCriterion(certificateChainValidator, null);
@@ -112,6 +127,23 @@ public class MetadataBackedSignatureValidatorTest {
 
     private ExplicitKeySignatureTrustEngine getExplicitKeySignatureTrustEngine() throws ComponentInitializationException {
         StringBackedMetadataResolver metadataResolver = new StringBackedMetadataResolver(loadMetadata("metadata.xml"));
+        MetadataCredentialResolver metadataCredentialResolver = getMetadataCredentialResolver(metadataResolver);
+        return new ExplicitKeySignatureTrustEngine(metadataCredentialResolver, keyInfoResolver);
+    }
+
+
+    private ExplicitKeySignatureTrustEngine getExplicitKeySignatureTrustEngineEncryptionOnly() throws ComponentInitializationException {
+        MetadataFactory metadataFactory = new MetadataFactory();
+        final EntityDescriptorFactory entityDescriptorFactory =  new EntityDescriptorFactory();
+        String metadataContainingWrongUsage = metadataFactory.metadata(
+                Collections.singletonList(entityDescriptorFactory.hubEntityDescriptorWithWrongUsageCertificates()));
+
+        StringBackedMetadataResolver metadataResolver = new StringBackedMetadataResolver(metadataContainingWrongUsage);
+        MetadataCredentialResolver metadataCredentialResolver = getMetadataCredentialResolver(metadataResolver);
+        return new ExplicitKeySignatureTrustEngine(metadataCredentialResolver, keyInfoResolver);
+    }
+
+    private MetadataCredentialResolver getMetadataCredentialResolver(StringBackedMetadataResolver metadataResolver) throws ComponentInitializationException {
         BasicParserPool basicParserPool = new BasicParserPool();
         basicParserPool.initialize();
         metadataResolver.setParserPool(basicParserPool);
@@ -126,8 +158,7 @@ public class MetadataBackedSignatureValidatorTest {
         metadataCredentialResolver.setRoleDescriptorResolver(basicRoleDescriptorResolver);
         metadataCredentialResolver.setKeyInfoCredentialResolver(DefaultSecurityConfigurationBootstrap.buildBasicInlineKeyInfoCredentialResolver());
         metadataCredentialResolver.initialize();
-
-        return new ExplicitKeySignatureTrustEngine(metadataCredentialResolver, keyInfoResolver);
+        return metadataCredentialResolver;
     }
 
     private CertificateChainValidator createCertificateChainValidator(CertificateValidity validity) {

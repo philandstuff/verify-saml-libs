@@ -3,6 +3,8 @@ package uk.gov.ida.saml.security;
 import net.shibboleth.utilities.java.support.resolver.Criterion;
 import org.opensaml.core.criterion.EntityIdCriterion;
 import org.opensaml.saml.criterion.EntityRoleCriterion;
+import org.opensaml.security.credential.UsageType;
+import org.opensaml.security.criteria.UsageCriterion;
 import org.opensaml.security.trust.TrustEngine;
 import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.impl.ExplicitKeySignatureTrustEngine;
@@ -40,6 +42,7 @@ public class MetadataBackedSignatureValidator extends SignatureValidator {
         List<Criterion> criteriaSet = new ArrayList<>();
         criteriaSet.add(new EntityIdCriterion(entityId));
         criteriaSet.add(new EntityRoleCriterion(role));
+        criteriaSet.add(new UsageCriterion(UsageType.SIGNING));
         this.certificateChainEvaluableCriteria.map(criteriaSet::add);
 
         return criteriaSet;

@@ -32,9 +32,13 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.base.Throwables.propagate;
+import static uk.gov.ida.saml.core.test.TestEntityIds.HUB_CONNECTOR_ENTITY_ID;
 import static uk.gov.ida.saml.core.test.builders.AttributeStatementBuilder.anAttributeStatement;
 import static uk.gov.ida.saml.core.test.builders.AttributeStatementBuilder.anEidasAttributeStatement;
 import static uk.gov.ida.saml.core.test.builders.AuthnStatementBuilder.anEidasAuthnStatement;
+import static uk.gov.ida.saml.core.test.builders.SubjectBuilder.aSubject;
+import static uk.gov.ida.saml.core.test.builders.SubjectConfirmationBuilder.aSubjectConfirmation;
+import static uk.gov.ida.saml.core.test.builders.SubjectConfirmationDataBuilder.aSubjectConfirmationData;
 
 public class AssertionBuilder {
 
@@ -46,7 +50,7 @@ public class AssertionBuilder {
     private List<AuthnStatement> authnStatements = new ArrayList<>();
 
     private Optional<String> id = Optional.of("some-assertion-id");
-    private Optional<Subject> subject = Optional.ofNullable(SubjectBuilder.aSubject().build());
+    private Optional<Subject> subject = Optional.ofNullable(aSubject().build());
     private Optional<Issuer> issuer = Optional.ofNullable(IssuerBuilder.anIssuer().build());
     private Optional<Signature> signature = Optional.ofNullable(SignatureBuilder.aSignature().build());
     private Optional<Conditions> conditions = Optional.ofNullable(ConditionsBuilder.aConditions().build());
@@ -61,14 +65,21 @@ public class AssertionBuilder {
             .withConditions(
                 new ConditionsBuilder()
                 .validFor(Duration.standardMinutes(10))
-                .restrictedToAudience(TestEntityIds.HUB_CONNECTOR_ENTITY_ID)
+                .restrictedToAudience(HUB_CONNECTOR_ENTITY_ID)
                 .build())
             .withIssuer(
                 new IssuerBuilder()
                 .withIssuerId(TestEntityIds.STUB_COUNTRY_ONE)
                 .build())
             .addAttributeStatement(anEidasAttributeStatement().build())
-            .addAuthnStatement(anEidasAuthnStatement().build());
+            .addAuthnStatement(anEidasAuthnStatement().build())
+            .withSubject(
+                    aSubject()
+                    .withSubjectConfirmation(
+                        aSubjectConfirmation()
+                        .withSubjectConfirmationData(aSubjectConfirmationData().withRecipient(HUB_CONNECTOR_ENTITY_ID).build())
+                        .build())
+                    .build());
     }
 
     public static AssertionBuilder anAuthnStatementAssertion() {

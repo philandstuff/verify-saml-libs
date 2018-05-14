@@ -23,12 +23,16 @@ public class AuthnStatementBuilder {
     }
 
     public static AuthnStatementBuilder anEidasAuthnStatement() {
+        return anEidasAuthnStatement(EidasAuthnContext.EIDAS_LOA_SUBSTANTIAL);
+    }
+
+    public static AuthnStatementBuilder anEidasAuthnStatement(String level) {
         return anAuthnStatement()
             .withAuthnContext(
                 anAuthnContext()
                     .withAuthnContextClassRef(
                         anAuthnContextClassRef()
-                            .withAuthnContextClasRefValue(EidasAuthnContext.EIDAS_LOA_SUBSTANTIAL).build())
+                            .withAuthnContextClasRefValue(level).build())
                     .build()
             );
     }

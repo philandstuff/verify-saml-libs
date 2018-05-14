@@ -17,7 +17,7 @@ public class AuthnContextFactoryTest {
     public void shouldBeAbleToMapFromEidasToLoA() {
         assertThat(factory.mapFromEidasToLoA(EidasAuthnContext.EIDAS_LOA_LOW)).isEqualTo(AuthnContext.LEVEL_1);
         assertThat(factory.mapFromEidasToLoA(EidasAuthnContext.EIDAS_LOA_SUBSTANTIAL)).isEqualTo(AuthnContext.LEVEL_2);
-        assertThat(factory.mapFromEidasToLoA(EidasAuthnContext.EIDAS_LOA_HIGH)).isEqualTo(AuthnContext.LEVEL_3);
+        assertThat(factory.mapFromEidasToLoA(EidasAuthnContext.EIDAS_LOA_HIGH)).isEqualTo(AuthnContext.LEVEL_2);
     }
 
     @Test

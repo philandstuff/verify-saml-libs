@@ -22,9 +22,8 @@ public class AuthnContextFactory {
             case EIDAS_LOA_LOW:
                 return AuthnContext.LEVEL_1;
             case EIDAS_LOA_SUBSTANTIAL:
-                return AuthnContext.LEVEL_2;
             case EIDAS_LOA_HIGH:
-                return AuthnContext.LEVEL_3;
+                return AuthnContext.LEVEL_2;
             default:
                 throw new IllegalStateException(format(SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, eIDASLevelOfAssurance));
         }

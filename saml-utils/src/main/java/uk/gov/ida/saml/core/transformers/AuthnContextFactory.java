@@ -30,6 +30,18 @@ public class AuthnContextFactory {
         }
     }
 
+    public String mapFromLoAToEidas(AuthnContext levelOfAssurance) {
+        switch (levelOfAssurance) {
+            case LEVEL_1:
+                return EIDAS_LOA_LOW;
+            case LEVEL_2:
+                return EIDAS_LOA_SUBSTANTIAL;
+            default:
+                // We currently don't support anything above Level 2.
+                throw new IllegalStateException(format(SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance.toString()));
+        }
+    }
+
     public AuthnContext authnContextForLevelOfAssurance(String levelOfAssurance) {
         switch (levelOfAssurance) {
             case IdaAuthnContext.LEVEL_1_AUTHN_CTX:

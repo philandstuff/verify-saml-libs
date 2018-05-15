@@ -12,7 +12,8 @@ import static uk.gov.ida.saml.core.extensions.EidasAuthnContext.EIDAS_LOA_SUBSTA
 
 public class AuthnContextFactory {
 
-    public static final String SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE = "SAML AuthnContext 'AuthnContextClassRef' element value ''{0}'' is not a recognised value.";
+    public static final String SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE  = "SAML AuthnContext 'AuthnContextClassRef' element value ''{0}'' is not a recognised value.";
+    public static final String EIDAS_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE = "eIDAS AuthnContext ''{0}'' is not a recognised value.";
 
     @Inject
     public AuthnContextFactory() {}
@@ -25,7 +26,7 @@ public class AuthnContextFactory {
             case EIDAS_LOA_HIGH:
                 return AuthnContext.LEVEL_2;
             default:
-                throw new IllegalStateException(format(SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, eIDASLevelOfAssurance));
+                throw new IllegalStateException(format(EIDAS_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, eIDASLevelOfAssurance));
         }
     }
 

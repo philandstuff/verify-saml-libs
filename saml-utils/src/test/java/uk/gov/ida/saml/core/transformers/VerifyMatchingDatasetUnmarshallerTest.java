@@ -14,6 +14,8 @@ import uk.gov.ida.saml.core.extensions.PersonName;
 import uk.gov.ida.saml.core.test.OpenSAMLMockitoRunner;
 import uk.gov.ida.saml.core.domain.AddressFactory;
 import uk.gov.ida.saml.core.domain.MatchingDataset;
+import uk.gov.ida.saml.core.test.builders.NameIdBuilder;
+import uk.gov.ida.saml.core.test.builders.SubjectBuilder;
 
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
@@ -51,7 +53,10 @@ public class VerifyMatchingDatasetUnmarshallerTest {
         Address previousAddress2 = anAddressAttributeValue().addLines(asList("address-line-3")).withFrom(DateTime.parse("2010-08-08")).withTo(DateTime.parse("2011-08-07")).build();
         Attribute previousAddresses = anAddressAttribute().addAddress(previousAddress1).addAddress(previousAddress2).buildPreviousAddress();
 
-        Assertion originalAssertion = aMatchingDatasetAssertion(firstname, middlenames, surname, gender, dateOfBirth, currentAddress, previousAddresses).buildUnencrypted();
+        String pid = "PID12345";
+        Assertion originalAssertion = aMatchingDatasetAssertion(firstname, middlenames, surname, gender, dateOfBirth, currentAddress, previousAddresses)
+                .withSubject(SubjectBuilder.aSubject().withNameId(NameIdBuilder.aNameId().withValue(pid).build()).build())
+                .buildUnencrypted();
 
         MatchingDataset matchingDataset = unmarshaller.fromAssertion(originalAssertion);
 
@@ -94,6 +99,7 @@ public class VerifyMatchingDatasetUnmarshallerTest {
         uk.gov.ida.saml.core.domain.Address transformedPreviousAddress2 = matchingDataset.getAddresses().get(2);
         assertThat(transformedPreviousAddress2.getLines().get(0)).isEqualTo(previousAddress2.getLines().get(0).getValue());
 
+        assertThat(matchingDataset.getPersonalId()).isEqualTo(pid);
     }
 
     @Test

@@ -112,17 +112,13 @@ public class AssertionBuilder {
     public static AssertionBuilder anEidasMatchingDatasetAssertion(
             Attribute firstName,
             Attribute surname,
-            Attribute gender,
             Attribute dateOfBirth,
-            Attribute currentAddress,
             Attribute personalIdentifier) {
         AttributeStatementBuilder attributeStatementBuilder = anAttributeStatement()
             .addAttribute(firstName)
             .addAttribute(surname)
-            .addAttribute(gender)
             .addAttribute(dateOfBirth)
-            .addAttribute(currentAddress)
-                .addAttribute(personalIdentifier);
+            .addAttribute(personalIdentifier);
 
         return anAssertion()
             .addAttributeStatement(attributeStatementBuilder.build());

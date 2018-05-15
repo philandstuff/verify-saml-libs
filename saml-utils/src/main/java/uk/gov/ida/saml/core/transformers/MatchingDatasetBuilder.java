@@ -20,7 +20,7 @@ class MatchingDatasetBuilder {
     private List<SimpleMdsValue<LocalDate>> dateOfBirths = new ArrayList<>();
     private List<Address> currentAddresses = newArrayList();
     private List<Address> previousAddresses = newArrayList();
-    private List<SimpleMdsValue<String>> personalId = new ArrayList<>();
+    private String personalId;
 
     public void firstname(List<SimpleMdsValue<String>> firstnames) {
         this.firstnames.addAll(firstnames);
@@ -42,7 +42,7 @@ class MatchingDatasetBuilder {
         this.currentAddresses.addAll(currentAddresses);
     }
 
-    public void personalId(List<SimpleMdsValue<String>> personalId) {
+    public void personalId(String personalId) {
         this.personalId = personalId;
     }
 

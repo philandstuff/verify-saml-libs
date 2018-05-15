@@ -10,7 +10,6 @@ import java.util.Optional;
 
 public class MatchingDataset {
 
-    private final List<SimpleMdsValue<String>> personalId;
     private final List<SimpleMdsValue<String>> firstNames;
     private final List<SimpleMdsValue<String>> middleNames;
     private final List<SimpleMdsValue<String>> surnames;
@@ -18,17 +17,7 @@ public class MatchingDataset {
     private final List<SimpleMdsValue<LocalDate>> dateOfBirths;
     private final List<Address> currentAddresses;
     private final List<Address> previousAddresses;
-
-    public MatchingDataset(
-            List<SimpleMdsValue<String>> firstNames,
-            List<SimpleMdsValue<String>> middleNames,
-            List<SimpleMdsValue<String>> surnames,
-            Optional<SimpleMdsValue<Gender>> gender,
-            List<SimpleMdsValue<LocalDate>> dateOfBirths,
-            List<Address> currentAddresses,
-            List<Address> previousAddresses) {
-        this(firstNames, middleNames, surnames, gender, dateOfBirths, currentAddresses, previousAddresses, new ArrayList<>());
-    }
+    private final String personalId;
 
     public MatchingDataset(
             List<SimpleMdsValue<String>> firstNames,
@@ -38,7 +27,7 @@ public class MatchingDataset {
             List<SimpleMdsValue<LocalDate>> dateOfBirths,
             List<Address> currentAddresses,
             List<Address> previousAddresses,
-            List<SimpleMdsValue<String>> personalId) {
+            String personalId) {
         this.firstNames = firstNames;
         this.middleNames = middleNames;
         this.surnames = surnames;
@@ -81,7 +70,7 @@ public class MatchingDataset {
         return ImmutableList.copyOf(Iterables.concat(currentAddresses, previousAddresses));
     }
 
-    public List<SimpleMdsValue<String>> getPersonalId() {
+    public String getPersonalId() {
         return personalId;
     }
 }

@@ -12,17 +12,17 @@ import java.util.Optional;
 
 public class IdentityProviderAssertionUnmarshaller {
     private final VerifyMatchingDatasetUnmarshaller verifyMatchingDatasetUnmarshaller;
-    private final CountryMatchingDatasetUnmarshaller countryMatchingDatasetUnmarshaller;
+    private final EidasMatchingDatasetUnmarshaller eidasMatchingDatasetUnmarshaller;
     private final IdentityProviderAuthnStatementUnmarshaller identityProviderAuthnStatementUnmarshaller;
     private final String hubEntityId;
 
     public IdentityProviderAssertionUnmarshaller(
             VerifyMatchingDatasetUnmarshaller verifyMatchingDatasetUnmarshaller,
-            CountryMatchingDatasetUnmarshaller countryMatchingDatasetUnmarshaller,
+            EidasMatchingDatasetUnmarshaller eidasMatchingDatasetUnmarshaller,
             IdentityProviderAuthnStatementUnmarshaller identityProviderAuthnStatementUnmarshaller,
             String hubEntityId) {
         this.verifyMatchingDatasetUnmarshaller = verifyMatchingDatasetUnmarshaller;
-        this.countryMatchingDatasetUnmarshaller = countryMatchingDatasetUnmarshaller;
+        this.eidasMatchingDatasetUnmarshaller = eidasMatchingDatasetUnmarshaller;
         this.identityProviderAuthnStatementUnmarshaller = identityProviderAuthnStatementUnmarshaller;
         this.hubEntityId = hubEntityId;
     }
@@ -40,7 +40,7 @@ public class IdentityProviderAssertionUnmarshaller {
     }
 
     public IdentityProviderAssertion fromCountryAssertion(Assertion assertion) {
-        return getIdentityProviderAssertion(assertion, this.countryMatchingDatasetUnmarshaller);
+        return getIdentityProviderAssertion(assertion, this.eidasMatchingDatasetUnmarshaller);
     }
 
     private IdentityProviderAssertion getIdentityProviderAssertion(Assertion assertion, MatchingDatasetUnmarshaller matchingDatasetUnmarshaller) {
@@ -74,7 +74,7 @@ public class IdentityProviderAssertionUnmarshaller {
 
     private boolean assertionContainsMatchingDataset(Assertion assertion) {
         // This assumes that the MDS and AuthnStatement are NOT in the same assertion
-        return doesAssertionContainAttributes(assertion) && isNotCycle3AssertionFromHub(assertion) && !containsAuthnStatement(assertion);
+        return doesAssertionContainAttributes(assertion) && isNotCycle3AssertionFromHub(assertion);
     }
 
     private boolean containsAuthnStatement(Assertion assertion) {

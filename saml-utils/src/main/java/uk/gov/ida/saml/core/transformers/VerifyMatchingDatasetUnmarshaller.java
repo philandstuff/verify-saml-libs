@@ -1,5 +1,7 @@
 package uk.gov.ida.saml.core.transformers;
 
+import org.opensaml.core.xml.XMLObject;
+import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,10 +10,14 @@ import uk.gov.ida.saml.core.domain.Address;
 import uk.gov.ida.saml.core.domain.AddressFactory;
 import uk.gov.ida.saml.core.domain.Gender;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
+import uk.gov.ida.saml.core.extensions.PersonName;
+import uk.gov.ida.saml.core.test.builders.SimpleMdsValueBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.text.MessageFormat.format;
+import static java.util.Arrays.asList;
 
 public class VerifyMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshaller {
 
@@ -60,5 +66,21 @@ public class VerifyMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshall
                 LOG.warn(errorMessage);
                 throw new IllegalArgumentException(errorMessage);
         }
+    }
+
+    @Override
+    protected String getPersonalIdentifier(Assertion assertion) {
+        return assertion.getSubject().getNameID().getValue();
+    }
+
+    private List<SimpleMdsValue<String>> transformPersonNameAttribute(Attribute attribute) {
+        List<SimpleMdsValue<String>> personNames = new ArrayList<>();
+
+        for (XMLObject xmlObject : attribute.getAttributeValues()) {
+            PersonName personName = (PersonName) xmlObject;
+            personNames.add(new SimpleMdsValue<>(personName.getValue(), personName.getFrom(), personName.getTo(), personName.getVerified()));
+        }
+
+        return personNames;
     }
 }

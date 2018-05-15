@@ -37,7 +37,7 @@ public class AuthnContextFactoryTest {
             factory.mapFromEidasToLoA(levelOfAssurance);
             fail("Expected an exception but none was thrown");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage()).isEqualTo(format(AuthnContextFactory.EIDAS_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
+            assertThat(e.getMessage()).isEqualTo(format(AuthnContextFactory.LEVEL_OF_ASSURANCE_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
         }
     }
 
@@ -55,9 +55,9 @@ public class AuthnContextFactoryTest {
         final String levelOfAssurance = "glarg";
         try {
             factory.authnContextForLevelOfAssurance(levelOfAssurance);
-            fail("fail");
+            fail("Expected an exception but none was thrown");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage()).isEqualTo(format(AuthnContextFactory.SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
+            assertThat(e.getMessage()).isEqualTo(format(AuthnContextFactory.LEVEL_OF_ASSURANCE_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
         }
     }
 

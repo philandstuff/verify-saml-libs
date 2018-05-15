@@ -7,6 +7,7 @@ import uk.gov.ida.saml.core.domain.AuthnContext;
 
 import static java.text.MessageFormat.format;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 public class AuthnContextFactoryTest {
@@ -21,18 +22,27 @@ public class AuthnContextFactoryTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenMappingInvalidEidasToLoA() throws Exception {
+    public void shouldBeAbleToMapFromLoAtoEidas() {
+        assertThat(factory.mapFromLoAToEidas(AuthnContext.LEVEL_1)).isEqualTo(EidasAuthnContext.EIDAS_LOA_LOW);
+        assertThat(factory.mapFromLoAToEidas(AuthnContext.LEVEL_2)).isEqualTo(EidasAuthnContext.EIDAS_LOA_SUBSTANTIAL);
+        assertThatThrownBy(() -> factory.mapFromLoAToEidas(AuthnContext.LEVEL_3)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> factory.mapFromLoAToEidas(AuthnContext.LEVEL_4)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> factory.mapFromLoAToEidas(AuthnContext.LEVEL_X)).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenMappingInvalidEidasToLoA() {
         final String levelOfAssurance = "glarg";
         try {
             factory.mapFromEidasToLoA(levelOfAssurance);
-            fail("fail");
+            fail("Expected an exception but none was thrown");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage()).isEqualTo(format(AuthnContextFactory.SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
+            assertThat(e.getMessage()).isEqualTo(format(AuthnContextFactory.LEVEL_OF_ASSURANCE_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
         }
     }
 
     @Test
-    public void transform_shouldCorrectlyTransformValidValues() throws Exception {
+    public void shouldCorrectlyTransformValidValues() {
         assertThat(factory.authnContextForLevelOfAssurance(IdaAuthnContext.LEVEL_1_AUTHN_CTX)).isEqualTo(AuthnContext.LEVEL_1);
         assertThat(factory.authnContextForLevelOfAssurance(IdaAuthnContext.LEVEL_2_AUTHN_CTX)).isEqualTo(AuthnContext.LEVEL_2);
         assertThat(factory.authnContextForLevelOfAssurance(IdaAuthnContext.LEVEL_3_AUTHN_CTX)).isEqualTo(AuthnContext.LEVEL_3);
@@ -41,13 +51,13 @@ public class AuthnContextFactoryTest {
     }
 
     @Test
-    public void transform_shouldThrowExceptionIfInvalidValue() throws Exception {
+    public void shouldThrowExceptionIfInvalidValue() {
         final String levelOfAssurance = "glarg";
         try {
             factory.authnContextForLevelOfAssurance(levelOfAssurance);
-            fail("fail");
+            fail("Expected an exception but none was thrown");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage()).isEqualTo(format(AuthnContextFactory.SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
+            assertThat(e.getMessage()).isEqualTo(format(AuthnContextFactory.LEVEL_OF_ASSURANCE_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
         }
     }
 

@@ -12,7 +12,7 @@ import static uk.gov.ida.saml.core.extensions.EidasAuthnContext.EIDAS_LOA_SUBSTA
 
 public class AuthnContextFactory {
 
-    public static final String SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE = "SAML AuthnContext 'AuthnContextClassRef' element value ''{0}'' is not a recognised value.";
+    public static final String LEVEL_OF_ASSURANCE_IS_NOT_A_RECOGNISED_VALUE = "Level of assurance ''{0}'' is not a recognised value.";
 
     @Inject
     public AuthnContextFactory() {}
@@ -25,7 +25,19 @@ public class AuthnContextFactory {
             case EIDAS_LOA_HIGH:
                 return AuthnContext.LEVEL_2;
             default:
-                throw new IllegalStateException(format(SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, eIDASLevelOfAssurance));
+                throw new IllegalStateException(format(LEVEL_OF_ASSURANCE_IS_NOT_A_RECOGNISED_VALUE, eIDASLevelOfAssurance));
+        }
+    }
+
+    public String mapFromLoAToEidas(AuthnContext levelOfAssurance) {
+        switch (levelOfAssurance) {
+            case LEVEL_1:
+                return EIDAS_LOA_LOW;
+            case LEVEL_2:
+                return EIDAS_LOA_SUBSTANTIAL;
+            default:
+                // We currently don't support anything above Level 2.
+                throw new IllegalStateException(format(LEVEL_OF_ASSURANCE_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance.toString()));
         }
     }
 
@@ -42,7 +54,7 @@ public class AuthnContextFactory {
             case IdaAuthnContext.LEVEL_X_AUTHN_CTX:
                 return AuthnContext.LEVEL_X;
             default:
-                throw new IllegalStateException(format(SAML_AUTHN_CONTEXT_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
+                throw new IllegalStateException(format(LEVEL_OF_ASSURANCE_IS_NOT_A_RECOGNISED_VALUE, levelOfAssurance));
         }
     }
 }

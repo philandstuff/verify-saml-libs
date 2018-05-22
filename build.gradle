@@ -19,7 +19,7 @@ subprojects {
         opensaml_version = "3.3.0"
         dropwizard_version = "1.2.0"
         ida_utils_version = '332'
-        trust_anchor_version = '1.0-21'
+        trust_anchor_version = '1.0-27'
     }
     group = "uk.gov.ida"
     version = "$opensaml_version-${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"

@@ -1,8 +1,9 @@
 package uk.gov.ida.saml.hub.transformers.inbound.decorators;
 
-import javax.inject.Inject;
 import uk.gov.ida.saml.deserializers.validators.SizeValidator;
 import uk.gov.ida.saml.hub.validators.StringSizeValidator;
+
+import javax.inject.Inject;
 
 public class AuthnRequestSizeValidator implements SizeValidator {
 

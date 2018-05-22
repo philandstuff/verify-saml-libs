@@ -4,7 +4,6 @@ import org.opensaml.security.credential.BasicCredential;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.security.credential.UsageType;
 
-
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;

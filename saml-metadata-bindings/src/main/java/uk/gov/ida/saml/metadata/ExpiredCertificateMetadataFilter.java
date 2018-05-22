@@ -1,14 +1,5 @@
 package uk.gov.ida.saml.metadata;
 
-import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.CertificateNotYetValidException;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.apache.xml.security.utils.Base64;
 import org.joda.time.DateTimeUtils;
@@ -18,10 +9,17 @@ import org.opensaml.saml.metadata.resolver.filter.MetadataFilter;
 import org.opensaml.xmlsec.signature.SignableXMLObject;
 import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.X509Certificate;
-
 import uk.gov.ida.saml.metadata.exception.CertificateConversionException;
 
 import javax.inject.Inject;
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateNotYetValidException;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExpiredCertificateMetadataFilter implements MetadataFilter {
 

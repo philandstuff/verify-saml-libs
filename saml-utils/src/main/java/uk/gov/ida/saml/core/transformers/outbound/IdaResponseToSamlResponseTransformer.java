@@ -1,14 +1,13 @@
 package uk.gov.ida.saml.core.transformers.outbound;
 
-import javax.inject.Inject;
-
-import java.util.function.Function;
-
 import org.opensaml.saml.saml2.core.Issuer;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
 import uk.gov.ida.saml.core.OpenSamlXmlObjectFactory;
 import uk.gov.ida.saml.core.domain.IdaResponse;
+
+import javax.inject.Inject;
+import java.util.function.Function;
 
 public abstract class IdaResponseToSamlResponseTransformer<TInput extends IdaResponse> implements Function<TInput,Response> {
 

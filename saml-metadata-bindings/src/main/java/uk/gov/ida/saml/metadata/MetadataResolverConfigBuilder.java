@@ -2,7 +2,6 @@ package uk.gov.ida.saml.metadata;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.util.Base64;
-import org.joda.time.DateTime;
 import uk.gov.ida.saml.metadata.exception.TrustAnchorConfigException;
 
 import javax.ws.rs.core.UriBuilder;

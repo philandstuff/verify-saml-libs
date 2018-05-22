@@ -11,8 +11,8 @@ import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.encryption.support.EncryptionException;
 import uk.gov.ida.saml.core.test.OpenSAMLRunner;
 import uk.gov.ida.saml.security.EncrypterFactory;
-import uk.gov.ida.saml.security.KeyStoreBackedEncryptionCredentialResolver;
 import uk.gov.ida.saml.security.EntityToEncryptForLocator;
+import uk.gov.ida.saml.security.KeyStoreBackedEncryptionCredentialResolver;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,7 @@
 package uk.gov.ida.saml.core.transformers;
 
-import uk.gov.ida.saml.core.extensions.IdaAuthnContext;
 import uk.gov.ida.saml.core.domain.AuthnContext;
+import uk.gov.ida.saml.core.extensions.IdaAuthnContext;
 
 import javax.inject.Inject;
 

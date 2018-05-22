@@ -1,11 +1,12 @@
 package uk.gov.ida.saml.hub.transformers.outbound;
 
 import com.google.common.collect.ImmutableMap;
-import javax.inject.Inject;
 import uk.gov.ida.saml.core.OpenSamlXmlObjectFactory;
 import uk.gov.ida.saml.core.domain.DetailedStatusCode;
 import uk.gov.ida.saml.core.domain.MatchingServiceIdaStatus;
 import uk.gov.ida.saml.core.transformers.outbound.IdaStatusMarshaller;
+
+import javax.inject.Inject;
 
 public class MatchingServiceIdaStatusMarshaller extends IdaStatusMarshaller<MatchingServiceIdaStatus> {
 

@@ -3,8 +3,8 @@ package uk.gov.ida.saml.hub.transformers.outbound;
 import com.google.common.collect.ImmutableMap;
 import uk.gov.ida.saml.core.OpenSamlXmlObjectFactory;
 import uk.gov.ida.saml.core.domain.DetailedStatusCode;
-import uk.gov.ida.saml.core.transformers.outbound.IdaStatusMarshaller;
 import uk.gov.ida.saml.core.domain.UnknownUserCreationIdaStatus;
+import uk.gov.ida.saml.core.transformers.outbound.IdaStatusMarshaller;
 
 public class UnknownUserCreationIdaStatusMarshaller extends IdaStatusMarshaller<UnknownUserCreationIdaStatus> {
 

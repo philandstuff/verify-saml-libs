@@ -7,7 +7,6 @@ import org.opensaml.saml.saml2.core.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.saml.core.IdaConstants;
-import uk.gov.ida.saml.core.domain.AddressFactory;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
 import uk.gov.ida.saml.core.extensions.eidas.CurrentFamilyName;
 import uk.gov.ida.saml.core.extensions.eidas.CurrentGivenName;
@@ -16,16 +15,12 @@ import uk.gov.ida.saml.core.extensions.eidas.PersonIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 
 public class EidasMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshaller{
 
     private static final Logger LOG = LoggerFactory.getLogger(EidasMatchingDatasetUnmarshaller.class);
-
-    public EidasMatchingDatasetUnmarshaller() {
-    }
 
     @Override
     protected void transformAttribute(Attribute attribute, MatchingDatasetBuilder datasetBuilder) {

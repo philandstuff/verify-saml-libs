@@ -8,26 +8,27 @@ import org.junit.runner.RunWith;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AttributeStatement;
+import uk.gov.ida.saml.core.domain.AddressFactory;
+import uk.gov.ida.saml.core.domain.MatchingDataset;
 import uk.gov.ida.saml.core.extensions.Address;
 import uk.gov.ida.saml.core.extensions.Gender;
 import uk.gov.ida.saml.core.extensions.PersonName;
 import uk.gov.ida.saml.core.test.OpenSAMLMockitoRunner;
-import uk.gov.ida.saml.core.domain.AddressFactory;
-import uk.gov.ida.saml.core.domain.MatchingDataset;
 import uk.gov.ida.saml.core.test.builders.NameIdBuilder;
 import uk.gov.ida.saml.core.test.builders.SubjectBuilder;
 
-import static java.util.Arrays.*;
-import static org.assertj.core.api.Assertions.*;
-import static uk.gov.ida.saml.core.test.builders.AddressAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.AddressAttributeValueBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.AttributeStatementBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.DateAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.DateAttributeValueBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.GenderAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeValueBuilder.*;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.ida.saml.core.test.builders.AddressAttributeBuilder_1_1.anAddressAttribute;
+import static uk.gov.ida.saml.core.test.builders.AddressAttributeValueBuilder_1_1.anAddressAttributeValue;
+import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.aMatchingDatasetAssertion;
+import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.anAssertion;
+import static uk.gov.ida.saml.core.test.builders.AttributeStatementBuilder.anAttributeStatement;
+import static uk.gov.ida.saml.core.test.builders.DateAttributeBuilder_1_1.aDate_1_1;
+import static uk.gov.ida.saml.core.test.builders.DateAttributeValueBuilder.aDateValue;
+import static uk.gov.ida.saml.core.test.builders.GenderAttributeBuilder_1_1.aGender_1_1;
+import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeBuilder_1_1.aPersonName_1_1;
+import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeValueBuilder.aPersonNameValue;
 
 @RunWith(OpenSAMLMockitoRunner.class)
 public class VerifyMatchingDatasetUnmarshallerTest {

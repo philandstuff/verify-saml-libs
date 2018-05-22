@@ -11,13 +11,11 @@ import uk.gov.ida.saml.core.domain.AddressFactory;
 import uk.gov.ida.saml.core.domain.Gender;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
 import uk.gov.ida.saml.core.extensions.PersonName;
-import uk.gov.ida.saml.core.test.builders.SimpleMdsValueBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.text.MessageFormat.format;
-import static java.util.Arrays.asList;
 
 public class VerifyMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshaller {
 

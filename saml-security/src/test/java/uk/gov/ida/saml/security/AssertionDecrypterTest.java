@@ -1,16 +1,5 @@
 package uk.gov.ida.saml.security;
 
-import static junit.framework.TestCase.assertEquals;
-import static uk.gov.ida.saml.security.saml.builders.EncryptedAssertionBuilder.anEncryptedAssertionBuilder;
-import static uk.gov.ida.saml.security.saml.builders.IssuerBuilder.anIssuer;
-import static uk.gov.ida.saml.security.saml.builders.ResponseBuilder.aResponse;
-
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,18 +11,28 @@ import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.encryption.Decrypter;
 import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.signature.support.SignatureException;
-
 import uk.gov.ida.common.shared.security.PrivateKeyFactory;
 import uk.gov.ida.common.shared.security.PublicKeyFactory;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
 import uk.gov.ida.saml.core.test.TestEntityIds;
+import uk.gov.ida.saml.security.exception.SamlFailedToDecryptException;
 import uk.gov.ida.saml.security.saml.OpenSAMLMockitoRunner;
 import uk.gov.ida.saml.security.saml.TestCredentialFactory;
-import uk.gov.ida.saml.security.exception.SamlFailedToDecryptException;
 import uk.gov.ida.saml.security.saml.builders.EncryptedAssertionBuilder;
 import uk.gov.ida.saml.security.validators.ValidatedResponse;
 import uk.gov.ida.saml.security.validators.encryptedelementtype.EncryptionAlgorithmValidator;
+
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.List;
+
+import static junit.framework.TestCase.assertEquals;
+import static uk.gov.ida.saml.security.saml.builders.EncryptedAssertionBuilder.anEncryptedAssertionBuilder;
+import static uk.gov.ida.saml.security.saml.builders.IssuerBuilder.anIssuer;
+import static uk.gov.ida.saml.security.saml.builders.ResponseBuilder.aResponse;
 
 @RunWith(OpenSAMLMockitoRunner.class)
 public class AssertionDecrypterTest {

@@ -13,10 +13,10 @@ import uk.gov.ida.saml.core.test.TestCertificateStrings;
 import uk.gov.ida.saml.core.test.TestEntityIds;
 import uk.gov.ida.saml.core.validation.SamlValidationResponse;
 import uk.gov.ida.saml.security.errors.SamlTransformationErrorFactory;
-import uk.gov.ida.saml.security.saml.builders.AttributeQueryBuilder;
 import uk.gov.ida.saml.security.saml.OpenSAMLMockitoRunner;
-import uk.gov.ida.saml.security.saml.builders.ResponseBuilder;
 import uk.gov.ida.saml.security.saml.TestCredentialFactory;
+import uk.gov.ida.saml.security.saml.builders.AttributeQueryBuilder;
+import uk.gov.ida.saml.security.saml.builders.ResponseBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.ida.saml.security.saml.builders.AssertionBuilder.anAssertion;

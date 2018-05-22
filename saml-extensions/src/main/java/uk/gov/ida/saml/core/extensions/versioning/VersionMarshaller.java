@@ -6,7 +6,6 @@ import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.core.xml.util.XMLObjectSupport;
 import org.opensaml.saml.common.AbstractSAMLObjectMarshaller;
 import org.w3c.dom.Element;
-import uk.gov.ida.saml.core.IdaConstants;
 
 public class VersionMarshaller extends AbstractSAMLObjectMarshaller {
 

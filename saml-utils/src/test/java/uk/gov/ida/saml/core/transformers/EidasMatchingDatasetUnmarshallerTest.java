@@ -40,7 +40,7 @@ public class EidasMatchingDatasetUnmarshallerTest {
     }
 
     @Test
-    public void transform_shouldTransformAnAssertionIntoAMatchingDataset() {
+    public void transformShouldTransformAnAssertionIntoAMatchingDataset() {
         Attribute firstname = anEidasFirstName("Bob");
         Attribute surname = anEidasFamilyName("Bobbins");
         LocalDate dob = new LocalDate(1986, 12, 05);

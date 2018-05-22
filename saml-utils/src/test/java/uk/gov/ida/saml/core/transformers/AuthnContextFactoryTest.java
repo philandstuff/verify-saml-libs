@@ -1,9 +1,9 @@
 package uk.gov.ida.saml.core.transformers;
 
 import org.junit.Test;
+import uk.gov.ida.saml.core.domain.AuthnContext;
 import uk.gov.ida.saml.core.extensions.EidasAuthnContext;
 import uk.gov.ida.saml.core.extensions.IdaAuthnContext;
-import uk.gov.ida.saml.core.domain.AuthnContext;
 
 import static java.text.MessageFormat.format;
 import static org.assertj.core.api.Assertions.assertThat;

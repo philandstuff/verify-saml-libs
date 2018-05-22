@@ -114,11 +114,22 @@ public class AssertionBuilder {
             Attribute surname,
             Attribute dateOfBirth,
             Attribute personalIdentifier) {
+        return anEidasMatchingDatasetAssertion(firstName, surname, dateOfBirth, personalIdentifier, Optional.empty());
+    }
+
+    public static AssertionBuilder anEidasMatchingDatasetAssertion(
+            Attribute firstName,
+            Attribute surname,
+            Attribute dateOfBirth,
+            Attribute personalIdentifier,
+            Optional<Attribute> gender) {
         AttributeStatementBuilder attributeStatementBuilder = anAttributeStatement()
             .addAttribute(firstName)
             .addAttribute(surname)
             .addAttribute(dateOfBirth)
             .addAttribute(personalIdentifier);
+
+        gender.ifPresent(attributeStatementBuilder::addAttribute);
 
         return anAssertion()
             .addAttributeStatement(attributeStatementBuilder.build());

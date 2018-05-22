@@ -46,6 +46,11 @@ public class EidasMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshalle
                 // This is set on the datasetBuilder in the abstract base class - see getPersonalIdentifier
                 break;
 
+            /* Multiple countries still send Gender even when it is not requested so this avoids the fall-through to
+            the error message */
+            case IdaConstants.Eidas_Attributes.Gender.NAME:
+                break;
+
             default:
                 String errorMessage = format("Attribute {0} is not a supported Eidas Matching Dataset attribute.", attribute.getName());
                 LOG.warn(errorMessage);

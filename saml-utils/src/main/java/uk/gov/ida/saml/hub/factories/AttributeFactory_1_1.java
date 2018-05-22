@@ -1,19 +1,19 @@
 package uk.gov.ida.saml.hub.factories;
 
-import javax.inject.Inject;
 import org.joda.time.LocalDate;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AttributeValue;
-import uk.gov.ida.saml.core.domain.Gender;
 import uk.gov.ida.saml.core.IdaConstants;
 import uk.gov.ida.saml.core.OpenSamlXmlObjectFactory;
 import uk.gov.ida.saml.core.domain.Address;
+import uk.gov.ida.saml.core.domain.Gender;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
 import uk.gov.ida.saml.core.extensions.Date;
 import uk.gov.ida.saml.core.extensions.Line;
 import uk.gov.ida.saml.core.extensions.PersonName;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 

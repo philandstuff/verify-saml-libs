@@ -1,8 +1,7 @@
 package uk.gov.ida.saml.core.domain;
 
-import java.util.Optional;
-
 import java.io.Serializable;
+import java.util.Optional;
 
 public class PassthroughAssertion implements Serializable {
 

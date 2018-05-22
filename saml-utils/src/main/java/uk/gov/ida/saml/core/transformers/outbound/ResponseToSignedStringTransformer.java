@@ -1,16 +1,14 @@
 package uk.gov.ida.saml.core.transformers.outbound;
 
-import java.util.function.Function;
-
 import org.opensaml.saml.saml2.core.Response;
-
-import javax.inject.Inject;
-
 import uk.gov.ida.saml.core.transformers.outbound.decorators.ResponseAssertionSigner;
 import uk.gov.ida.saml.core.transformers.outbound.decorators.ResponseSignatureCreator;
 import uk.gov.ida.saml.core.transformers.outbound.decorators.SamlResponseAssertionEncrypter;
 import uk.gov.ida.saml.core.transformers.outbound.decorators.SamlSignatureSigner;
 import uk.gov.ida.saml.serializers.XmlObjectToBase64EncodedStringTransformer;
+
+import javax.inject.Inject;
+import java.util.function.Function;
 
 public class ResponseToSignedStringTransformer implements Function<Response, String> {
 

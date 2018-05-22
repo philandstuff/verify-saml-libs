@@ -5,12 +5,11 @@ import org.opensaml.saml.saml2.core.NameIDType;
 import org.opensaml.saml.saml2.core.Subject;
 import org.opensaml.saml.saml2.core.SubjectConfirmation;
 import org.opensaml.saml.saml2.core.SubjectConfirmationData;
-
-import javax.inject.Inject;
-
 import uk.gov.ida.saml.core.OpenSamlXmlObjectFactory;
 import uk.gov.ida.saml.core.domain.AssertionRestrictions;
 import uk.gov.ida.saml.core.domain.OutboundAssertion;
+
+import javax.inject.Inject;
 
 public class OutboundAssertionToSubjectTransformer {
     private OpenSamlXmlObjectFactory openSamlXmlObjectFactory;

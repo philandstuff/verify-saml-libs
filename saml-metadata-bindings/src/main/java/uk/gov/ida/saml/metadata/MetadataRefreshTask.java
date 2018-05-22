@@ -1,11 +1,11 @@
 package uk.gov.ida.saml.metadata;
 
 import com.google.common.collect.ImmutableMultimap;
-import javax.inject.Inject;
 import io.dropwizard.servlets.tasks.Task;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.metadata.resolver.impl.AbstractReloadingMetadataResolver;
 
+import javax.inject.Inject;
 import java.io.PrintWriter;
 
 public class MetadataRefreshTask extends Task {

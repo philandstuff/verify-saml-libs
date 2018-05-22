@@ -10,11 +10,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.saml2.core.Attribute;
-import uk.gov.ida.saml.core.domain.Gender;
-import uk.gov.ida.saml.core.domain.SimpleMdsValue;
-
 import uk.gov.ida.saml.core.OpenSamlXmlObjectFactory;
 import uk.gov.ida.saml.core.domain.Address;
+import uk.gov.ida.saml.core.domain.Gender;
+import uk.gov.ida.saml.core.domain.SimpleMdsValue;
 import uk.gov.ida.saml.core.extensions.Gpg45Status;
 import uk.gov.ida.saml.core.extensions.IPAddress;
 import uk.gov.ida.saml.core.extensions.IdpFraudEventId;

@@ -1,21 +1,20 @@
 package uk.gov.ida.saml.core.test.builders.metadata;
 
-import static uk.gov.ida.saml.core.test.builders.metadata.AssertionConsumerServiceBuilder.anAssertionConsumerService;
-import static uk.gov.ida.saml.core.test.builders.metadata.KeyDescriptorBuilder.aKeyDescriptor;
-import static uk.gov.ida.saml.core.test.builders.metadata.KeyInfoBuilder.aKeyInfo;
-import static uk.gov.ida.saml.core.test.builders.metadata.X509CertificateBuilder.aX509Certificate;
-import static uk.gov.ida.saml.core.test.builders.metadata.X509DataBuilder.aX509Data;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.metadata.AssertionConsumerService;
 import org.opensaml.saml.saml2.metadata.KeyDescriptor;
 import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.opensaml.security.credential.UsageType;
-
 import uk.gov.ida.saml.core.test.TestEntityIds;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static uk.gov.ida.saml.core.test.builders.metadata.AssertionConsumerServiceBuilder.anAssertionConsumerService;
+import static uk.gov.ida.saml.core.test.builders.metadata.KeyDescriptorBuilder.aKeyDescriptor;
+import static uk.gov.ida.saml.core.test.builders.metadata.KeyInfoBuilder.aKeyInfo;
+import static uk.gov.ida.saml.core.test.builders.metadata.X509CertificateBuilder.aX509Certificate;
+import static uk.gov.ida.saml.core.test.builders.metadata.X509DataBuilder.aX509Data;
 
 public class SPSSODescriptorBuilder {
 

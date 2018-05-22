@@ -8,24 +8,27 @@ import org.junit.runner.RunWith;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AttributeStatement;
+import uk.gov.ida.saml.core.domain.AddressFactory;
+import uk.gov.ida.saml.core.domain.MatchingDataset;
 import uk.gov.ida.saml.core.extensions.Address;
 import uk.gov.ida.saml.core.extensions.Gender;
 import uk.gov.ida.saml.core.extensions.PersonName;
 import uk.gov.ida.saml.core.test.OpenSAMLMockitoRunner;
-import uk.gov.ida.saml.core.domain.AddressFactory;
-import uk.gov.ida.saml.core.domain.MatchingDataset;
+import uk.gov.ida.saml.core.test.builders.NameIdBuilder;
+import uk.gov.ida.saml.core.test.builders.SubjectBuilder;
 
-import static java.util.Arrays.*;
-import static org.assertj.core.api.Assertions.*;
-import static uk.gov.ida.saml.core.test.builders.AddressAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.AddressAttributeValueBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.AttributeStatementBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.DateAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.DateAttributeValueBuilder.*;
-import static uk.gov.ida.saml.core.test.builders.GenderAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeBuilder_1_1.*;
-import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeValueBuilder.*;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.ida.saml.core.test.builders.AddressAttributeBuilder_1_1.anAddressAttribute;
+import static uk.gov.ida.saml.core.test.builders.AddressAttributeValueBuilder_1_1.anAddressAttributeValue;
+import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.aMatchingDatasetAssertion;
+import static uk.gov.ida.saml.core.test.builders.AssertionBuilder.anAssertion;
+import static uk.gov.ida.saml.core.test.builders.AttributeStatementBuilder.anAttributeStatement;
+import static uk.gov.ida.saml.core.test.builders.DateAttributeBuilder_1_1.aDate_1_1;
+import static uk.gov.ida.saml.core.test.builders.DateAttributeValueBuilder.aDateValue;
+import static uk.gov.ida.saml.core.test.builders.GenderAttributeBuilder_1_1.aGender_1_1;
+import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeBuilder_1_1.aPersonName_1_1;
+import static uk.gov.ida.saml.core.test.builders.PersonNameAttributeValueBuilder.aPersonNameValue;
 
 @RunWith(OpenSAMLMockitoRunner.class)
 public class VerifyMatchingDatasetUnmarshallerTest {
@@ -51,7 +54,10 @@ public class VerifyMatchingDatasetUnmarshallerTest {
         Address previousAddress2 = anAddressAttributeValue().addLines(asList("address-line-3")).withFrom(DateTime.parse("2010-08-08")).withTo(DateTime.parse("2011-08-07")).build();
         Attribute previousAddresses = anAddressAttribute().addAddress(previousAddress1).addAddress(previousAddress2).buildPreviousAddress();
 
-        Assertion originalAssertion = aMatchingDatasetAssertion(firstname, middlenames, surname, gender, dateOfBirth, currentAddress, previousAddresses).buildUnencrypted();
+        String pid = "PID12345";
+        Assertion originalAssertion = aMatchingDatasetAssertion(firstname, middlenames, surname, gender, dateOfBirth, currentAddress, previousAddresses)
+                .withSubject(SubjectBuilder.aSubject().withNameId(NameIdBuilder.aNameId().withValue(pid).build()).build())
+                .buildUnencrypted();
 
         MatchingDataset matchingDataset = unmarshaller.fromAssertion(originalAssertion);
 
@@ -94,6 +100,7 @@ public class VerifyMatchingDatasetUnmarshallerTest {
         uk.gov.ida.saml.core.domain.Address transformedPreviousAddress2 = matchingDataset.getAddresses().get(2);
         assertThat(transformedPreviousAddress2.getLines().get(0)).isEqualTo(previousAddress2.getLines().get(0).getValue());
 
+        assertThat(matchingDataset.getPersonalId()).isEqualTo(pid);
     }
 
     @Test

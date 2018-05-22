@@ -13,7 +13,6 @@ import uk.gov.ida.saml.core.validation.SamlValidationResponse;
 import uk.gov.ida.saml.security.errors.SamlTransformationErrorFactory;
 import uk.gov.ida.saml.security.validators.signature.SamlSignatureUtil;
 
-
 import javax.xml.namespace.QName;
 
 import static uk.gov.ida.saml.security.errors.SamlTransformationErrorFactory.invalidMessageSignature;

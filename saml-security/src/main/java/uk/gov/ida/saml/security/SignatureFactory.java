@@ -14,7 +14,6 @@ import org.opensaml.xmlsec.signature.support.SignatureConstants;
 import org.slf4j.event.Level;
 import uk.gov.ida.saml.core.validation.SamlTransformationErrorException;
 
-
 import javax.validation.constraints.NotNull;
 import java.security.cert.X509Certificate;
 

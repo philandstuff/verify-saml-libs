@@ -29,7 +29,6 @@ import uk.gov.ida.common.shared.security.verification.CertificateChainValidator;
 import uk.gov.ida.common.shared.security.verification.CertificateValidity;
 import uk.gov.ida.common.shared.security.verification.exceptions.CertificateChainValidationException;
 
-
 import java.security.KeyStore;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.X509Certificate;

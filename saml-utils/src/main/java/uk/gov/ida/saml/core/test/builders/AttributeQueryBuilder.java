@@ -1,5 +1,6 @@
 package uk.gov.ida.saml.core.test.builders;
 
+import org.joda.time.DateTime;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.MarshallingException;
@@ -29,6 +30,7 @@ public class AttributeQueryBuilder {
     private Optional<Subject> subject = ofNullable(SubjectBuilder.aSubject().build());
     private Optional<Issuer> issuer = ofNullable(IssuerBuilder.anIssuer().build());
     private Optional<Signature> signature = ofNullable(SignatureBuilder.aSignature().build());
+    private Optional<DateTime> issueInstant = ofNullable(DateTime.now());
 
     public static AttributeQueryBuilder anAttributeQuery() {
         return new AttributeQueryBuilder();
@@ -39,17 +41,10 @@ public class AttributeQueryBuilder {
             .getBuilder(AttributeQuery.DEFAULT_ELEMENT_NAME)
             .buildObject(AttributeQuery.DEFAULT_ELEMENT_NAME, AttributeQuery.TYPE_NAME);
 
-        if (subject.isPresent()) {
-            attributeQuery.setSubject(subject.get());
-        }
-
-        if (issuer.isPresent()) {
-            attributeQuery.setIssuer(issuer.get());
-        }
-
-        if (id.isPresent()) {
-            attributeQuery.setID(id.get());
-        }
+        subject.ifPresent(attributeQuery::setSubject);
+        issuer.ifPresent(attributeQuery::setIssuer);
+        issueInstant.ifPresent(attributeQuery::setIssueInstant);
+        id.ifPresent(attributeQuery::setID);
 
         if (signature.isPresent()) {
             attributeQuery.setSignature(signature.get());
@@ -85,6 +80,11 @@ public class AttributeQueryBuilder {
 
     public AttributeQueryBuilder withIssuer(Issuer issuer) {
         this.issuer = ofNullable(issuer);
+        return this;
+    }
+
+    public AttributeQueryBuilder withIssueInstant(DateTime issueInstant) {
+        this.issueInstant = ofNullable(issueInstant);
         return this;
     }
 

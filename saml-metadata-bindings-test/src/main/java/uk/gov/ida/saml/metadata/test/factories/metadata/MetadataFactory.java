@@ -1,10 +1,5 @@
 package uk.gov.ida.saml.metadata.test.factories.metadata;
 
-import static uk.gov.ida.shared.utils.xml.XmlUtils.newDocumentBuilder;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.List;
-
 import com.google.common.base.Throwables;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.Marshaller;
@@ -16,6 +11,11 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import uk.gov.ida.shared.utils.xml.XmlUtils;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.util.List;
+
+import static uk.gov.ida.shared.utils.xml.XmlUtils.newDocumentBuilder;
 
 public class MetadataFactory {
     private final EntitiesDescriptorFactory entitiesDescriptorFactory = new EntitiesDescriptorFactory();

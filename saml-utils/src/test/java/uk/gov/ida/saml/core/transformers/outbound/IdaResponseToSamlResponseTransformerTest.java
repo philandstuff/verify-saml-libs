@@ -1,19 +1,18 @@
 package uk.gov.ida.saml.core.transformers.outbound;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.ida.saml.core.test.builders.ResponseForHubBuilder.anAuthnResponse;
-
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.opensaml.saml.saml2.core.Response;
 import org.opensaml.saml.saml2.core.Status;
-
 import uk.gov.ida.saml.core.OpenSamlXmlObjectFactory;
 import uk.gov.ida.saml.core.domain.OutboundResponseFromHub;
 import uk.gov.ida.saml.core.test.OpenSAMLMockitoRunner;
 import uk.gov.ida.saml.core.test.TestEntityIds;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.ida.saml.core.test.builders.ResponseForHubBuilder.anAuthnResponse;
 
 @RunWith(OpenSAMLMockitoRunner.class)
 public class IdaResponseToSamlResponseTransformerTest {

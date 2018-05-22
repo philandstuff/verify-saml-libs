@@ -1,10 +1,10 @@
 package uk.gov.ida.saml.metadata;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.opensaml.security.x509.PKIXValidationInformation;
 import org.opensaml.security.x509.impl.StaticPKIXValidationInformationResolver;
+
+import java.util.Collections;
+import java.util.List;
 
 public class NamelessPKIXValidationInformationResolver extends StaticPKIXValidationInformationResolver {
 

@@ -4,8 +4,6 @@ import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.metadata.SingleSignOnService;
 import org.opensaml.saml.saml2.metadata.impl.SingleSignOnServiceBuilder;
 
-import java.util.Optional;
-
 public class EndpointBuilder {
 
     private String binding = SAMLConstants.SAML2_POST_BINDING_URI;

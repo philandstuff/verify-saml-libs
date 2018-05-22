@@ -7,9 +7,7 @@ import org.opensaml.saml.saml2.core.Attribute;
 import org.opensaml.saml.saml2.core.AttributeStatement;
 import uk.gov.ida.saml.core.domain.MatchingDataset;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
-import uk.gov.ida.saml.core.extensions.PersonName;
 import uk.gov.ida.saml.core.extensions.StringBasedMdsAttributeValue;
-import uk.gov.ida.saml.core.extensions.eidas.PersonIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +31,14 @@ public abstract class MatchingDatasetUnmarshaller {
             transformAttribute(attribute, datasetBuilder);
         }
 
+        datasetBuilder.personalId(getPersonalIdentifier(assertion));
+
         return datasetBuilder.build();
     }
 
     protected abstract void transformAttribute(Attribute attribute, MatchingDatasetBuilder datasetBuilder);
+
+    protected abstract String getPersonalIdentifier(Assertion assertion);
 
     final List<SimpleMdsValue<LocalDate>> getBirthdates(Attribute attribute) {
         List<SimpleMdsValue<LocalDate>> birthDates = new ArrayList<>();
@@ -52,27 +54,5 @@ public abstract class MatchingDatasetUnmarshaller {
         }
 
         return birthDates;
-    }
-
-    final List<SimpleMdsValue<String>> getPersonalIds(Attribute attribute) {
-        List<SimpleMdsValue<String>> pids = new ArrayList<>();
-
-        for (XMLObject xmlObject : attribute.getAttributeValues()) {
-            PersonIdentifier personName = (PersonIdentifier) xmlObject;
-            pids.add(new SimpleMdsValue<>(personName.getPersonIdentifier(), null, null, true));
-        }
-
-        return pids;
-    }
-
-    final List<SimpleMdsValue<String>> transformPersonNameAttribute(Attribute attribute) {
-        List<SimpleMdsValue<String>> personNames = new ArrayList<>();
-
-        for (XMLObject xmlObject : attribute.getAttributeValues()) {
-            PersonName personName = (PersonName) xmlObject;
-            personNames.add(new SimpleMdsValue<>(personName.getValue(), personName.getFrom(), personName.getTo(), personName.getVerified()));
-        }
-
-        return personNames;
     }
 }

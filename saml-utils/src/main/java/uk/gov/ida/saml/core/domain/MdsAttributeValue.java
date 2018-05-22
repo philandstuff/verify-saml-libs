@@ -1,7 +1,8 @@
 package uk.gov.ida.saml.core.domain;
 
-import java.util.Optional;
 import org.joda.time.DateTime;
+
+import java.util.Optional;
 
 public interface MdsAttributeValue {
     DateTime getFrom();

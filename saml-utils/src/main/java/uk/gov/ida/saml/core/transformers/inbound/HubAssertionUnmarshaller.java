@@ -1,6 +1,5 @@
 package uk.gov.ida.saml.core.transformers.inbound;
 
-import java.util.Optional;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.SubjectConfirmationData;
 import uk.gov.ida.saml.core.domain.AssertionRestrictions;
@@ -9,6 +8,7 @@ import uk.gov.ida.saml.core.domain.HubAssertion;
 import uk.gov.ida.saml.core.domain.PersistentId;
 
 import java.text.MessageFormat;
+import java.util.Optional;
 
 public class HubAssertionUnmarshaller {
     private final Cycle3DatasetFactory cycle3DatasetFactory;

@@ -3,7 +3,6 @@ package uk.gov.ida.saml.core.test.builders.metadata;
 import org.opensaml.saml.saml2.metadata.EmailAddress;
 
 import java.net.URI;
-import java.util.Optional;
 
 public class EmailAddressBuilder {
     private URI value = URI.create("mailto:fred@flintstone.com");

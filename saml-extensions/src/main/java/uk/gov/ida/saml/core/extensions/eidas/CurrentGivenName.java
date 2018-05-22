@@ -1,7 +1,6 @@
 package uk.gov.ida.saml.core.extensions.eidas;
 
 import org.opensaml.saml.common.xml.SAMLConstants;
-import org.opensaml.saml.saml2.core.AttributeValue;
 import uk.gov.ida.saml.core.IdaConstants;
 
 import javax.xml.namespace.QName;

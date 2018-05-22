@@ -25,7 +25,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static org.opensaml.xmlsec.signature.support.SignatureConstants.*;
+import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_DIGEST_SHA256;
+import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_DIGEST_SHA512;
+import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256;
+import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512;
 
 public class PKIXSignatureValidationFilterProvider implements Provider<SignatureValidationFilter> {
 

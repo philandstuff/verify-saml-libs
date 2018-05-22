@@ -2,11 +2,11 @@ package uk.gov.ida.saml.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Optional;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 
 public class Address implements MdsAttributeValue, Serializable {
     private boolean verified;

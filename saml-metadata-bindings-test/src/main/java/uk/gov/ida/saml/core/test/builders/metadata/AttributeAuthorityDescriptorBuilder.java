@@ -1,11 +1,11 @@
 package uk.gov.ida.saml.core.test.builders.metadata;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.opensaml.saml.common.xml.SAMLConstants;
 import org.opensaml.saml.saml2.metadata.AttributeAuthorityDescriptor;
 import org.opensaml.saml.saml2.metadata.KeyDescriptor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AttributeAuthorityDescriptorBuilder {
 

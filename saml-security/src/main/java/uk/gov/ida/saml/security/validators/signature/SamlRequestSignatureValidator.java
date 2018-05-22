@@ -6,7 +6,6 @@ import uk.gov.ida.saml.core.validation.SamlValidationResponse;
 import uk.gov.ida.saml.core.validation.SamlValidationSpecificationFailure;
 import uk.gov.ida.saml.security.SamlMessageSignatureValidator;
 
-
 import javax.xml.namespace.QName;
 
 public class SamlRequestSignatureValidator<T extends RequestAbstractType> {

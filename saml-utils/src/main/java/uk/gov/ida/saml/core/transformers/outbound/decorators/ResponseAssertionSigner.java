@@ -1,6 +1,5 @@
 package uk.gov.ida.saml.core.transformers.outbound.decorators;
 
-import javax.inject.Inject;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
 import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.saml.common.SAMLRuntimeException;
@@ -10,6 +9,8 @@ import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.support.SignatureException;
 import org.opensaml.xmlsec.signature.support.Signer;
 import uk.gov.ida.saml.security.SignatureFactory;
+
+import javax.inject.Inject;
 
 public class ResponseAssertionSigner {
 

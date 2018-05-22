@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
+
 import static java.util.stream.Collectors.toList;
 
 public class EidasMetadataResolverRepository implements MetadataResolverRepository {

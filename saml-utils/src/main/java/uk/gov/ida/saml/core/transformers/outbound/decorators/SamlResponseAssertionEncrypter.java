@@ -5,7 +5,6 @@ import org.opensaml.saml.saml2.core.EncryptedAssertion;
 import org.opensaml.saml.saml2.core.Response;
 import uk.gov.ida.saml.security.EncrypterFactory;
 import uk.gov.ida.saml.security.EncryptionCredentialResolver;
-import uk.gov.ida.saml.security.KeyStoreBackedEncryptionCredentialResolver;
 import uk.gov.ida.saml.security.EntityToEncryptForLocator;
 
 import javax.inject.Inject;

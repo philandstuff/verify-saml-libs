@@ -3,7 +3,6 @@ package uk.gov.ida.saml.metadata;
 import certificates.values.CACertificates;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
-import net.minidev.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import uk.gov.ida.common.shared.security.PrivateKeyFactory;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
+import uk.gov.ida.eidas.trustanchor.CountryTrustAnchor;
 import uk.gov.ida.eidas.trustanchor.Generator;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
 
@@ -30,12 +30,12 @@ import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
@@ -60,6 +60,8 @@ public class EidasTrustAnchorResolverTest {
     private KeyStore trustStore;
     private PrivateKey privateSigningKey;
     private X509Certificate publicSigningCert;
+
+    private X509CertificateFactory certificateFactory = new X509CertificateFactory();
 
     @Before
     public void setUp() throws URISyntaxException, KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
@@ -111,17 +113,17 @@ public class EidasTrustAnchorResolverTest {
     }
 
     private String createJsonAnchor(String kid) {
-        RSAPublicKey countrySigningKey = (RSAPublicKey) new X509CertificateFactory().createCertificate(TestCertificateStrings.METADATA_SIGNING_B_PUBLIC_CERT).getPublicKey();
+        List<String> certificateChain = asList(
+                CACertificates.TEST_ROOT_CA,
+                CACertificates.TEST_METADATA_CA,
+                TestCertificateStrings.METADATA_SIGNING_B_PUBLIC_CERT
+        );
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("kty", "RSA");
-        jsonObject.put("key_ops", Collections.singletonList("verify"));
-        jsonObject.put("kid", kid);
-        jsonObject.put("alg", "RS256");
-        jsonObject.put("e", new String (Base64.encodeInteger(countrySigningKey.getPublicExponent())));
-        jsonObject.put("n", new String (Base64.encodeInteger(countrySigningKey.getModulus())));
-        jsonObject.put("x5c", Collections.singletonList(TestCertificateStrings.METADATA_SIGNING_B_PUBLIC_CERT));
+        return createJWK(kid, certificateChain).toJSONString();
+    }
 
-        return jsonObject.toJSONString();
+    private JWK createJWK(String entityId, List<String> certificates) {
+        List<X509Certificate> certs = certificates.stream().map(certificateFactory::createCertificate).collect(Collectors.toList());
+        return CountryTrustAnchor.make(certs, entityId);
     }
 }

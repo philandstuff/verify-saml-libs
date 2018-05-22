@@ -19,7 +19,7 @@ subprojects {
         opensaml_version = "3.3.0"
         dropwizard_version = "1.2.0"
         ida_utils_version = '332'
-        trust_anchor_version = '1.0-21'
+        trust_anchor_version = '1.0-30'
     }
     group = "uk.gov.ida"
     version = "$opensaml_version-${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
@@ -67,7 +67,7 @@ subprojects {
                 'org.assertj:assertj-joda-time:1.1.0',
                 'org.assertj:assertj-core:1.6.0',
                 'junit:junit:4.11',
-                'uk.gov.ida:ida-dev-pki:1.1.0-25',
+                'uk.gov.ida:ida-dev-pki:1.1.0-28',
                 'org.mockito:mockito-core:1.9.5'
 
         xml_utils "uk.gov.ida:common-utils:2.0.0-$ida_utils_version"

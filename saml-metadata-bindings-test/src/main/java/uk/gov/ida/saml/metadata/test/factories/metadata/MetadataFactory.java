@@ -58,7 +58,6 @@ public class MetadataFactory {
         );
     }
 
-
     private Element transform(SAMLObject entitiesDescriptor) {
         Element result;
         try {

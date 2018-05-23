@@ -4,11 +4,14 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import net.shibboleth.utilities.java.support.xml.BasicParserPool;
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.opensaml.core.xml.io.MarshallingException;
 import org.opensaml.saml.metadata.resolver.impl.BasicRoleDescriptorResolver;
 import org.opensaml.saml.saml2.core.Assertion;
 import org.opensaml.saml.saml2.core.AuthnRequest;
+import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
 import org.opensaml.saml.security.impl.MetadataCredentialResolver;
 import org.opensaml.security.credential.Credential;
@@ -22,6 +25,10 @@ import uk.gov.ida.common.shared.security.verification.CertificateChainValidator;
 import uk.gov.ida.common.shared.security.verification.CertificateValidity;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
 import uk.gov.ida.saml.core.test.TestEntityIds;
+import uk.gov.ida.saml.core.test.builders.metadata.EntitiesDescriptorBuilder;
+import uk.gov.ida.saml.core.test.builders.metadata.EntityDescriptorBuilder;
+import uk.gov.ida.saml.core.test.builders.metadata.KeyDescriptorBuilder;
+import uk.gov.ida.saml.core.test.builders.metadata.SPSSODescriptorBuilder;
 import uk.gov.ida.saml.metadata.test.factories.metadata.EntityDescriptorFactory;
 import uk.gov.ida.saml.metadata.test.factories.metadata.MetadataFactory;
 import uk.gov.ida.saml.security.saml.OpenSAMLMockitoRunner;
@@ -36,7 +43,6 @@ import uk.gov.ida.saml.security.saml.deserializers.AuthnRequestUnmarshaller;
 import uk.gov.ida.saml.security.saml.deserializers.SamlObjectParser;
 import uk.gov.ida.saml.security.saml.deserializers.StringToOpenSamlObjectTransformer;
 
-import java.io.IOException;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.X509Certificate;
@@ -114,27 +120,44 @@ public class MetadataBackedSignatureValidatorTest {
         return MetadataBackedSignatureValidator.withCertificateChainValidation(signatureTrustEngine, certificateChainEvaluableCriterion);
     }
 
-    private String loadMetadata(final String fileName) {
+    private String loadMetadata() {
+        final SPSSODescriptor spssoDescriptor = SPSSODescriptorBuilder.anSpServiceDescriptor()
+                .addSupportedProtocol("urn:oasis:names:tc:SAML:2.0:protocol")
+                .addKeyDescriptor(KeyDescriptorBuilder.aKeyDescriptor()
+                        .withX509ForSigning(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT).build())
+                .addKeyDescriptor(KeyDescriptorBuilder.aKeyDescriptor()
+                        .withX509ForSigning(TestCertificateStrings.METADATA_SIGNING_B_PUBLIC_CERT).build())
+                .addKeyDescriptor(KeyDescriptorBuilder.aKeyDescriptor()
+                        .withX509ForEncryption(TestCertificateStrings.HUB_TEST_PUBLIC_ENCRYPTION_CERT).build())
+                .build();
+
         try {
-            URL authnRequestUrl = getClass().getClassLoader().getResource(fileName);
-            return Resources.toString(authnRequestUrl, Charsets.UTF_8);
+            final EntityDescriptor entityDescriptor = EntityDescriptorBuilder.anEntityDescriptor()
+                    .withId("0a2bf940-e6fe-4f32-833d-022dfbfc77c5")
+                    .withEntityId("https://signin.service.gov.uk")
+                    .withValidUntil(DateTime.now().plusYears(100))
+                    .withCacheDuration(6000000L)
+                    .addSpServiceDescriptor(spssoDescriptor)
+                    .build();
+
+            return new MetadataFactory().metadata(EntitiesDescriptorBuilder.anEntitiesDescriptor()
+                    .withEntityDescriptors(Collections.singletonList(entityDescriptor)).build());
+        } catch (MarshallingException | SignatureException e) {
+            e.printStackTrace();
         }
-        catch(IOException ioException) {
-            ioException.printStackTrace(System.out);
-        }
+
         return null;
     }
 
     private ExplicitKeySignatureTrustEngine getExplicitKeySignatureTrustEngine() throws ComponentInitializationException {
-        StringBackedMetadataResolver metadataResolver = new StringBackedMetadataResolver(loadMetadata("metadata.xml"));
+        StringBackedMetadataResolver metadataResolver = new StringBackedMetadataResolver(loadMetadata());
         MetadataCredentialResolver metadataCredentialResolver = getMetadataCredentialResolver(metadataResolver);
         return new ExplicitKeySignatureTrustEngine(metadataCredentialResolver, keyInfoResolver);
     }
 
-
     private ExplicitKeySignatureTrustEngine getExplicitKeySignatureTrustEngineEncryptionOnly() throws ComponentInitializationException {
         MetadataFactory metadataFactory = new MetadataFactory();
-        final EntityDescriptorFactory entityDescriptorFactory =  new EntityDescriptorFactory();
+        final EntityDescriptorFactory entityDescriptorFactory = new EntityDescriptorFactory();
         String metadataContainingWrongUsage = metadataFactory.metadata(
                 Collections.singletonList(entityDescriptorFactory.hubEntityDescriptorWithWrongUsageCertificates()));
 

@@ -28,7 +28,15 @@ public class IdentityProviderAssertionUnmarshaller {
     }
 
     public IdentityProviderAssertion fromVerifyAssertion(Assertion assertion) {
-        return getIdentityProviderAssertion(assertion, this.verifyMatchingDatasetUnmarshaller);
+        MatchingDataset matchingDataset = null;
+        IdentityProviderAuthnStatement authnStatement = null;
+        if (assertionContainsMatchingDataset(assertion) && !containsAuthnStatement(assertion)) {
+            matchingDataset = this.verifyMatchingDatasetUnmarshaller.fromAssertion(assertion);
+        } else if (containsAuthnStatement(assertion) && isNotCycle3AssertionFromHub(assertion)) {
+            authnStatement = this.identityProviderAuthnStatementUnmarshaller.fromAssertion(assertion);
+        }
+
+        return getIdentityProviderAssertion(assertion, matchingDataset, authnStatement);
     }
 
     @Deprecated
@@ -40,20 +48,12 @@ public class IdentityProviderAssertionUnmarshaller {
     }
 
     public IdentityProviderAssertion fromCountryAssertion(Assertion assertion) {
-        return getIdentityProviderAssertion(assertion, this.eidasMatchingDatasetUnmarshaller);
+        MatchingDataset matchingDataset = this.eidasMatchingDatasetUnmarshaller.fromAssertion(assertion);
+        IdentityProviderAuthnStatement authnStatement = this.identityProviderAuthnStatementUnmarshaller.fromAssertion(assertion);
+        return getIdentityProviderAssertion(assertion, matchingDataset, authnStatement);
     }
 
-    private IdentityProviderAssertion getIdentityProviderAssertion(Assertion assertion, MatchingDatasetUnmarshaller matchingDatasetUnmarshaller) {
-        MatchingDataset matchingDataset = null;
-        IdentityProviderAuthnStatement authnStatement = null;
-
-        if (assertionContainsMatchingDataset(assertion)) {
-            matchingDataset = matchingDatasetUnmarshaller.fromAssertion(assertion);
-        }
-        if (containsAuthnStatement(assertion) && isNotCycle3AssertionFromHub(assertion)) {
-            authnStatement = this.identityProviderAuthnStatementUnmarshaller.fromAssertion(assertion);
-        }
-
+    private IdentityProviderAssertion getIdentityProviderAssertion(Assertion assertion, MatchingDataset matchingDataset, IdentityProviderAuthnStatement authnStatement) {
         final SubjectConfirmationData subjectConfirmationData = assertion.getSubject().getSubjectConfirmations().get(0).getSubjectConfirmationData();
 
         AssertionRestrictions assertionRestrictions = new AssertionRestrictions(

@@ -27,6 +27,9 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_DIGEST_SHA256;
 import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_DIGEST_SHA512;
+import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA256;
+import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA384;
+import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA512;
 import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA256;
 import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA512;
 
@@ -43,7 +46,10 @@ public class PKIXSignatureValidationFilterProvider implements Provider<Signature
             ALGO_ID_SIGNATURE_RSA_SHA256,
             ALGO_ID_SIGNATURE_RSA_SHA512,
             ALGO_ID_DIGEST_SHA256,
-            ALGO_ID_DIGEST_SHA512
+            ALGO_ID_DIGEST_SHA512,
+            ALGO_ID_SIGNATURE_ECDSA_SHA256,
+            ALGO_ID_SIGNATURE_ECDSA_SHA384,
+            ALGO_ID_SIGNATURE_ECDSA_SHA512
     );
     private KeyStore metadataTrustStore;
 

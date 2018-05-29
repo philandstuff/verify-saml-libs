@@ -7,18 +7,20 @@ import uk.gov.ida.saml.core.domain.AddressFactory;
 import uk.gov.ida.saml.core.domain.Gender;
 import uk.gov.ida.saml.core.domain.MatchingDataset;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
+import uk.gov.ida.saml.core.domain.TransliterableMdsValue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
 public class MatchingDatasetBuilder {
 
-    private List<SimpleMdsValue<String>> firstnames = new ArrayList<>();
+    private List<TransliterableMdsValue> firstnames = new ArrayList<>();
     private List<SimpleMdsValue<String>> middleNames = new ArrayList<>();
-    private List<SimpleMdsValue<String>> surnames = new ArrayList<>();
+    private List<TransliterableMdsValue> surnames = new ArrayList<>();
     private Optional<SimpleMdsValue<Gender>> gender = Optional.empty();
     private List<SimpleMdsValue<LocalDate>> dateOfBirths = new ArrayList<>();
     private List<Address> currentAddresses = new ArrayList<>();
@@ -48,7 +50,7 @@ public class MatchingDatasetBuilder {
     }
 
     public MatchingDatasetBuilder addFirstname(SimpleMdsValue<String> firstname) {
-        this.firstnames.add(firstname);
+        this.firstnames.add(new TransliterableMdsValue(firstname));
         return this;
     }
 
@@ -58,7 +60,7 @@ public class MatchingDatasetBuilder {
     }
 
     public MatchingDatasetBuilder addSurname(SimpleMdsValue<String> surname) {
-        this.surnames.add(surname);
+        this.surnames.add(new TransliterableMdsValue(surname));
         return this;
     }
 
@@ -111,7 +113,7 @@ public class MatchingDatasetBuilder {
             final List<SimpleMdsValue<String>> surnameHistory) {
 
         this.surnames.clear();
-        this.surnames.addAll(surnameHistory);
+        this.surnames.addAll(surnameHistory.stream().map(TransliterableMdsValue::new).collect(Collectors.toList()));
         return this;
     }
 }

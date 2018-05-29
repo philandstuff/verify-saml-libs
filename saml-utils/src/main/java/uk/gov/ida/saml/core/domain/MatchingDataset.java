@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public class MatchingDataset {
 
-    private final List<SimpleMdsValue<String>> firstNames;
+    private final List<TransliterableMdsValue> firstNames;
     private final List<SimpleMdsValue<String>> middleNames;
-    private final List<SimpleMdsValue<String>> surnames;
+    private final List<TransliterableMdsValue> surnames;
     private final Optional<SimpleMdsValue<Gender>> gender;
     private final List<SimpleMdsValue<LocalDate>> dateOfBirths;
     private final List<Address> currentAddresses;
@@ -19,9 +19,9 @@ public class MatchingDataset {
     private final String personalId;
 
     public MatchingDataset(
-            List<SimpleMdsValue<String>> firstNames,
+            List<TransliterableMdsValue> firstNames,
             List<SimpleMdsValue<String>> middleNames,
-            List<SimpleMdsValue<String>> surnames,
+            List<TransliterableMdsValue> surnames,
             Optional<SimpleMdsValue<Gender>> gender,
             List<SimpleMdsValue<LocalDate>> dateOfBirths,
             List<Address> currentAddresses,
@@ -37,7 +37,7 @@ public class MatchingDataset {
         this.personalId = personalId;
     }
 
-    public List<SimpleMdsValue<String>> getFirstNames() {
+    public List<TransliterableMdsValue> getFirstNames() {
         return firstNames;
     }
 
@@ -45,7 +45,7 @@ public class MatchingDataset {
         return middleNames;
     }
 
-    public List<SimpleMdsValue<String>> getSurnames() {
+    public List<TransliterableMdsValue> getSurnames() {
         return surnames;
     }
 

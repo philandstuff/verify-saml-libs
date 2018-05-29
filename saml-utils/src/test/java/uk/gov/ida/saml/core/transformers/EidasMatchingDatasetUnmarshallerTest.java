@@ -41,8 +41,35 @@ public class EidasMatchingDatasetUnmarshallerTest {
 
     @Test
     public void transformShouldTransformAnAssertionIntoAMatchingDataset() {
-        Attribute firstname = anEidasFirstName("Bob");
-        Attribute surname = anEidasFamilyName("Bobbins");
+        Attribute firstname = anEidasFirstName("Bob", true);
+        Attribute surname = anEidasFamilyName("Bobbins", true);
+        LocalDate dob = new LocalDate(1986, 12, 05);
+        Attribute dateOfBirth = anEidasDateOfBirth(dob);
+
+        PersonIdentifier personIdentifier = new PersonIdentifierBuilder().buildObject();
+        personIdentifier.setPersonIdentifier("PID12345");
+        Attribute personalIdentifier = aPersonIdentifier().withValue(personIdentifier).build();
+        Assertion originalAssertion = anEidasMatchingDatasetAssertion(firstname, surname, dateOfBirth, personalIdentifier,
+                Optional.empty()).buildUnencrypted();
+
+        MatchingDataset matchingDataset = unmarshaller.fromAssertion(originalAssertion);
+
+        assertThat(matchingDataset.getFirstNames().get(0).getValue()).isEqualTo("Bob");
+        assertThat(matchingDataset.getSurnames().get(0).getValue()).isEqualTo("Bobbins");
+        assertThat(matchingDataset.getDateOfBirths().get(0).getValue()).isEqualTo(dob);
+        assertThat(matchingDataset.getPersonalId()).isEqualTo("PID12345");
+
+        assertThat(matchingDataset.getFirstNames().get(0).isVerified()).isTrue();
+        assertThat(matchingDataset.getSurnames().get(0).isVerified()).isTrue();
+        assertThat(matchingDataset.getDateOfBirths().get(0).isVerified()).isTrue();
+    }
+
+    @Test
+    public void transformShouldTransformAnAssertionIntoAMatchingDatasetWithNonLatinNames() {
+        Attribute firstname = anEidasFirstName("Bob", true);
+        firstname.getAttributeValues().add(getCurrentGivenName("Βαρίδι", false));
+        Attribute surname = anEidasFamilyName("Smith", true);
+        surname.getAttributeValues().add(getCurrentFamilyName("Σιδηρουργός", false));
         LocalDate dob = new LocalDate(1986, 12, 05);
         Attribute dateOfBirth = anEidasDateOfBirth(dob);
 
@@ -58,7 +85,9 @@ public class EidasMatchingDatasetUnmarshallerTest {
         MatchingDataset matchingDataset = unmarshaller.fromAssertion(originalAssertion);
 
         assertThat(matchingDataset.getFirstNames().get(0).getValue()).isEqualTo("Bob");
-        assertThat(matchingDataset.getSurnames().get(0).getValue()).isEqualTo("Bobbins");
+        assertThat(matchingDataset.getFirstNames().get(0).getNonLatinScriptValue()).isEqualTo("Βαρίδι");
+        assertThat(matchingDataset.getSurnames().get(0).getValue()).isEqualTo("Smith");
+        assertThat(matchingDataset.getSurnames().get(0).getNonLatinScriptValue()).isEqualTo("Σιδηρουργός");
         assertThat(matchingDataset.getDateOfBirths().get(0).getValue()).isEqualTo(dob);
         assertThat(matchingDataset.getPersonalId()).isEqualTo("PID12345");
         assertThat(matchingDataset.getGender()).isNotPresent();
@@ -75,16 +104,28 @@ public class EidasMatchingDatasetUnmarshallerTest {
         return attribute;
     }
 
-    private Attribute anEidasFirstName(String firstName) {
-        CurrentGivenName firstNameValue = new CurrentGivenNameBuilder().buildObject();
-        firstNameValue.setFirstName(firstName);
+    private Attribute anEidasFirstName(String firstName, boolean isLatinScript) {
+        CurrentGivenName firstNameValue = getCurrentGivenName(firstName, isLatinScript);
         return anEidasAttribute(IdaConstants.Eidas_Attributes.FirstName.NAME, firstNameValue);
     }
 
-    private Attribute anEidasFamilyName(String familyName) {
-        CurrentFamilyName setFamilyName = new CurrentFamilyNameBuilder().buildObject();
-        setFamilyName.setFamilyName(familyName);
-        return anEidasAttribute(IdaConstants.Eidas_Attributes.FamilyName.NAME, setFamilyName);
+    private CurrentGivenName getCurrentGivenName(String firstName, boolean isLatinScript) {
+        CurrentGivenName firstNameValue = new CurrentGivenNameBuilder().buildObject();
+        firstNameValue.setFirstName(firstName);
+        firstNameValue.setIsLatinScript(isLatinScript);
+        return firstNameValue;
+    }
+
+    private Attribute anEidasFamilyName(String familyName, boolean isLatinScript) {
+        CurrentFamilyName currentFamilyName = getCurrentFamilyName(familyName, isLatinScript);
+        return anEidasAttribute(IdaConstants.Eidas_Attributes.FamilyName.NAME, currentFamilyName);
+    }
+
+    private CurrentFamilyName getCurrentFamilyName(String familyName, boolean isLatinScript) {
+        CurrentFamilyName currentFamilyName = new CurrentFamilyNameBuilder().buildObject();
+        currentFamilyName.setFamilyName(familyName);
+        currentFamilyName.setIsLatinScript(isLatinScript);
+        return currentFamilyName;
     }
 
     private Attribute anEidasDateOfBirth(LocalDate dob) {

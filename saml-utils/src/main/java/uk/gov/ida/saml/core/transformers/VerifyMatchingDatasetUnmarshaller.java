@@ -10,10 +10,12 @@ import uk.gov.ida.saml.core.domain.Address;
 import uk.gov.ida.saml.core.domain.AddressFactory;
 import uk.gov.ida.saml.core.domain.Gender;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
+import uk.gov.ida.saml.core.domain.TransliterableMdsValue;
 import uk.gov.ida.saml.core.extensions.PersonName;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 
@@ -29,7 +31,7 @@ public class VerifyMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshall
     protected void transformAttribute(Attribute attribute, MatchingDatasetBuilder datasetBuilder) {
         switch (attribute.getName()) {
             case IdaConstants.Attributes_1_1.Firstname.NAME:
-                datasetBuilder.firstname(transformPersonNameAttribute(attribute));
+                datasetBuilder.addFirstNames(transformPersonNameAttribute(attribute).stream().map(TransliterableMdsValue::new).collect(Collectors.toList()));
                 break;
 
             case IdaConstants.Attributes_1_1.Middlename.NAME:
@@ -37,7 +39,7 @@ public class VerifyMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshall
                 break;
 
             case IdaConstants.Attributes_1_1.Surname.NAME:
-                datasetBuilder.addSurnames(transformPersonNameAttribute(attribute));
+                datasetBuilder.addSurnames(transformPersonNameAttribute(attribute).stream().map(TransliterableMdsValue::new).collect(Collectors.toList()));
                 break;
 
             case IdaConstants.Attributes_1_1.Gender.NAME:

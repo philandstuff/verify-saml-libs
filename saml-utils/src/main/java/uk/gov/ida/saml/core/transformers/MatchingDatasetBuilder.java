@@ -5,6 +5,7 @@ import uk.gov.ida.saml.core.domain.Address;
 import uk.gov.ida.saml.core.domain.Gender;
 import uk.gov.ida.saml.core.domain.MatchingDataset;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
+import uk.gov.ida.saml.core.domain.TransliterableMdsValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,20 +14,20 @@ import java.util.Optional;
 import static com.google.common.collect.Lists.newArrayList;
 
 class MatchingDatasetBuilder {
-    private List<SimpleMdsValue<String>> firstnames = new ArrayList<>();
+    private List<TransliterableMdsValue> firstnames = new ArrayList<>();
     private List<SimpleMdsValue<String>> middlenames = new ArrayList<>();
-    private List<SimpleMdsValue<String>> surnames = new ArrayList<>();
+    private List<TransliterableMdsValue> surnames = new ArrayList<>();
     private Optional<SimpleMdsValue<Gender>> gender = Optional.empty();
     private List<SimpleMdsValue<LocalDate>> dateOfBirths = new ArrayList<>();
     private List<Address> currentAddresses = newArrayList();
     private List<Address> previousAddresses = newArrayList();
     private String personalId;
 
-    public void firstname(List<SimpleMdsValue<String>> firstnames) {
+    public void addFirstNames(List<TransliterableMdsValue> firstnames) {
         this.firstnames.addAll(firstnames);
     }
 
-    public void addSurnames(List<SimpleMdsValue<String>> surnames) {
+    public void addSurnames(List<TransliterableMdsValue> surnames) {
         this.surnames.addAll(surnames);
     }
 

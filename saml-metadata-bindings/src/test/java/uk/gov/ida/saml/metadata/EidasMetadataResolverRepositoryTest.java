@@ -5,7 +5,6 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import io.dropwizard.setup.Environment;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
-import org.apache.xml.security.exceptions.Base64DecodingException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,7 +108,7 @@ public class EidasMetadataResolverRepositoryTest {
     }
 
     @Test
-    public void shouldCreateMetadataResolverWhenTrustAnchorIsValid() throws ParseException, KeyStoreException, CertificateEncodingException {
+    public void shouldCreateMetadataResolverWhenTrustAnchorIsValid() throws KeyStoreException, CertificateEncodingException {
         List<String> stringCertChain = Arrays.asList(
                 CACertificates.TEST_ROOT_CA,
                 CACertificates.TEST_IDP_CA,
@@ -123,13 +122,12 @@ public class EidasMetadataResolverRepositoryTest {
         when(metadataConfiguration.getMetadataSourceUri()).thenReturn(UriBuilder.fromUri("https://source.com").build());
         EidasMetadataResolverRepository metadataResolverRepository = new EidasMetadataResolverRepository(
                 trustAnchorResolver,
-                environment,
                 metadataConfiguration,
                 dropwizardMetadataResolverFactory,
                 timer,
                 metadataSignatureTrustEngineFactory,
                 new MetadataResolverConfigBuilder(),
-                metadataClientFactory);
+                metadataClient);
 
         verify(dropwizardMetadataResolverFactory).createMetadataResolverWithClient(metadataResolverConfigurationCaptor.capture(), eq(true), eq(metadataClient));
         MetadataResolver createdMetadataResolver = metadataResolverRepository.getMetadataResolver(trustAnchor.getKeyID()).get();
@@ -147,7 +145,7 @@ public class EidasMetadataResolverRepositoryTest {
     }
 
     @Test
-    public void shouldUseEarliestExpiryDateOfX509Cert() throws ParseException, Base64DecodingException {
+    public void shouldUseEarliestExpiryDateOfX509Cert() {
         String entityId = "http://signin.gov.uk/entity-id";
 
         List<String> stringCertsChain = asList(
@@ -162,14 +160,13 @@ public class EidasMetadataResolverRepositoryTest {
         when(metadataConfiguration.getMetadataSourceUri()).thenReturn(UriBuilder.fromUri("https://source.com").build());
         EidasMetadataResolverRepository metadataResolverRepository = new EidasMetadataResolverRepository(
                 trustAnchorResolver,
-                environment,
                 metadataConfiguration,
                 dropwizardMetadataResolverFactory,
                 timer,
                 metadataSignatureTrustEngineFactory,
                 new MetadataResolverConfigBuilder(),
-                metadataClientFactory
-        );
+                metadataClient);
+
         verify(dropwizardMetadataResolverFactory).createMetadataResolverWithClient(metadataResolverConfigurationCaptor.capture(), eq(true), eq(metadataClient));
 
         MetadataResolver createdMetadataResolver = metadataResolverRepository.getMetadataResolver(trustAnchor.getKeyID()).get();
@@ -194,8 +191,14 @@ public class EidasMetadataResolverRepositoryTest {
                 TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT
         );
         trustAnchors.add(createJWK(entityId, certificateChain));
-        EidasMetadataResolverRepository metadataResolverRepository = new EidasMetadataResolverRepository(trustAnchorResolver, environment, metadataConfiguration,
-                dropwizardMetadataResolverFactory, timer, metadataSignatureTrustEngineFactory, new MetadataResolverConfigBuilder(), metadataClientFactory);
+        EidasMetadataResolverRepository metadataResolverRepository = new EidasMetadataResolverRepository(
+                trustAnchorResolver,
+                metadataConfiguration,
+                dropwizardMetadataResolverFactory,
+                timer,
+                metadataSignatureTrustEngineFactory,
+                new MetadataResolverConfigBuilder(),
+                metadataClient);
 
         assertThat(metadataResolverRepository.getMetadataResolver(entityId)).isEmpty();
         assertThat(metadataResolverRepository.getSignatureTrustEngine(entityId)).isEmpty();
@@ -263,13 +266,12 @@ public class EidasMetadataResolverRepositoryTest {
 
         return new EidasMetadataResolverRepository(
                 trustAnchorResolver,
-                environment,
                 metadataConfiguration,
                 dropwizardMetadataResolverFactory,
                 timer,
                 metadataSignatureTrustEngineFactory,
                 metadataResolverConfigBuilder,
-                metadataClientFactory);
+                metadataClient);
     }
 
     private JWK createJWK(String entityId, List<String> certificates) {

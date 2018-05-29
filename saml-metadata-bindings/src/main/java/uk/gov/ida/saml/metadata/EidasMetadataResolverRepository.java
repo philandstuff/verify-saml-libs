@@ -3,7 +3,6 @@ package uk.gov.ida.saml.metadata;
 import com.google.common.collect.ImmutableMap;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.util.X509CertUtils;
-import io.dropwizard.setup.Environment;
 import net.shibboleth.utilities.java.support.component.AbstractInitializableComponent;
 import net.shibboleth.utilities.java.support.component.ComponentInitializationException;
 import org.apache.commons.collections.ListUtils;
@@ -16,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.eidas.trustanchor.CountryTrustAnchor;
 import uk.gov.ida.saml.metadata.factories.DropwizardMetadataResolverFactory;
-import uk.gov.ida.saml.metadata.factories.MetadataClientFactory;
 import uk.gov.ida.saml.metadata.factories.MetadataSignatureTrustEngineFactory;
 
 import javax.inject.Inject;
@@ -53,13 +51,12 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
 
     @Inject
     public EidasMetadataResolverRepository(EidasTrustAnchorResolver trustAnchorResolver,
-                                           Environment environment,
                                            EidasMetadataConfiguration eidasMetadataConfiguration,
                                            DropwizardMetadataResolverFactory dropwizardMetadataResolverFactory,
                                            Timer timer,
                                            MetadataSignatureTrustEngineFactory metadataSignatureTrustEngineFactory,
                                            MetadataResolverConfigBuilder metadataResolverConfigBuilder,
-                                           MetadataClientFactory metadataClientFactory
+                                           Client client
     ) {
         this.timer = timer;
         this.trustAnchorResolver = trustAnchorResolver;
@@ -67,13 +64,7 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
         this.dropwizardMetadataResolverFactory = dropwizardMetadataResolverFactory;
         this.metadataSignatureTrustEngineFactory = metadataSignatureTrustEngineFactory;
         this.metadataResolverConfigBuilder = metadataResolverConfigBuilder;
-
-        client = metadataClientFactory.getClient(
-            environment,
-            eidasMetadataConfiguration.getJerseyClientConfiguration(),
-            eidasMetadataConfiguration.getJerseyClientName() + "-resolvers"
-        );
-
+        this.client = client;
         refresh();
     }
 
@@ -93,12 +84,12 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
     }
 
     @Override
-    public Map<String, MetadataResolver> getMetadataResolvers(){
+    public Map<String, MetadataResolver> getMetadataResolvers() {
         return metadataResolvers.entrySet().stream()
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                e -> e.getValue().getMetadataResolver()
-            ));
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().getMetadataResolver()
+                ));
     }
 
     @Override
@@ -142,7 +133,7 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
                 MetadataResolverContainer metadataResolverContainer = metadataResolvers.containsKey(trustAnchorsEntityId) ?
                         metadataResolvers.get(trustAnchorsEntityId) : createMetadataResolverContainer(trustAnchorsEntityId);
                 newMetadataResolvers.put(trustAnchorsEntityId, metadataResolverContainer);
-            } catch (CertificateException | UnsupportedEncodingException | ComponentInitializationException e) {
+            } catch (Exception e) {
                 log.error("Error creating MetadataResolver for " + trustAnchorsEntityId, e);
             }
         });
@@ -175,7 +166,7 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
     }
 
     @Override
-    public List<X509Certificate> sortCertsByDate(JWK trustAnchor){
+    public List<X509Certificate> sortCertsByDate(JWK trustAnchor) {
         return trustAnchor.getX509CertChain().stream()
                 .map(base64 -> {
                     try {
@@ -187,7 +178,7 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
                 .sorted(Comparator.comparing(X509Certificate::getNotAfter))
                 .collect(toList());
     }
-    
+
     private MetadataResolverContainer createMetadataResolverContainer(JWK trustAnchor) throws CertificateException, ComponentInitializationException, UnsupportedEncodingException {
         MetadataResolverConfiguration metadataResolverConfiguration = metadataResolverConfigBuilder.createMetadataResolverConfiguration(trustAnchor, eidasMetadataConfiguration);
         JerseyClientMetadataResolver metadataResolver = (JerseyClientMetadataResolver) dropwizardMetadataResolverFactory.createMetadataResolverWithClient(metadataResolverConfiguration, true, client);

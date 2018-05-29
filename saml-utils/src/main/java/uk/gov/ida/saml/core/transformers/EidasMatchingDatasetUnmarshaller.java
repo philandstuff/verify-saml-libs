@@ -8,15 +8,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.ida.saml.core.IdaConstants;
 import uk.gov.ida.saml.core.domain.SimpleMdsValue;
+import uk.gov.ida.saml.core.domain.TransliterableMdsValue;
 import uk.gov.ida.saml.core.extensions.eidas.CurrentFamilyName;
 import uk.gov.ida.saml.core.extensions.eidas.CurrentGivenName;
 import uk.gov.ida.saml.core.extensions.eidas.DateOfBirth;
 import uk.gov.ida.saml.core.extensions.eidas.PersonIdentifier;
+import uk.gov.ida.saml.core.extensions.eidas.TransliterableString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 public class EidasMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshaller{
 
@@ -26,7 +32,7 @@ public class EidasMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshalle
     protected void transformAttribute(Attribute attribute, MatchingDatasetBuilder datasetBuilder) {
         switch (attribute.getName()) {
             case IdaConstants.Eidas_Attributes.FirstName.NAME:
-                datasetBuilder.firstname(transformEidasGivenNameAttribute(attribute));
+                datasetBuilder.addFirstNames(transformEidasGivenNameAttribute(attribute));
                 break;
 
             case IdaConstants.Eidas_Attributes.FamilyName.NAME:
@@ -68,26 +74,34 @@ public class EidasMatchingDatasetUnmarshaller extends MatchingDatasetUnmarshalle
     }
 
 
-    private List<SimpleMdsValue<String>> transformEidasGivenNameAttribute(Attribute attribute) {
-        List<SimpleMdsValue<String>> personNames = new ArrayList<>();
+    private List<TransliterableMdsValue> transformEidasGivenNameAttribute(Attribute attribute) {
+        Map<Boolean, List<CurrentGivenName>> attributeValueMap = attribute.getAttributeValues()
+                .stream()
+                .map(a -> (CurrentGivenName)a)
+                .collect(Collectors.groupingBy(TransliterableString::isLatinScript));
 
-        for (XMLObject xmlObject : attribute.getAttributeValues()) {
-            CurrentGivenName personName = (CurrentGivenName) xmlObject;
-            // There are no from/to dates for eIDAS attributes
-            personNames.add(new SimpleMdsValue<>(personName.getFirstName(), null, null, true));
-        }
-        return personNames;
+        return singletonList(new TransliterableMdsValue(attributeValueMap.get(true).get(0).getFirstName(),
+                attributeValueMap
+                        .getOrDefault(false, emptyList())
+                        .stream()
+                        .findFirst()
+                        .map(CurrentGivenName::getFirstName)
+                        .orElse(null)));
     }
 
-    private List<SimpleMdsValue<String>> transformEidasFamilyNameAttribute(Attribute attribute) {
-        List<SimpleMdsValue<String>> personNames = new ArrayList<>();
+    private List<TransliterableMdsValue> transformEidasFamilyNameAttribute(Attribute attribute) {
+        Map<Boolean, List<CurrentFamilyName>> attributeValueMap = attribute.getAttributeValues()
+                .stream()
+                .map(a -> (CurrentFamilyName)a)
+                .collect(Collectors.groupingBy(TransliterableString::isLatinScript));
 
-        for (XMLObject xmlObject : attribute.getAttributeValues()) {
-            CurrentFamilyName personName = (CurrentFamilyName) xmlObject;
-            // There are no from/to dates for eIDAS attributes
-            personNames.add(new SimpleMdsValue<>(personName.getFamilyName(), null, null, true));
-        }
-        return personNames;
+        return singletonList(new TransliterableMdsValue(attributeValueMap.get(true).get(0).getFamilyName(),
+                attributeValueMap
+                        .getOrDefault(false, emptyList())
+                        .stream()
+                        .findFirst()
+                        .map(CurrentFamilyName::getFamilyName)
+                        .orElse(null)));
     }
 
     private List<SimpleMdsValue<LocalDate>> transformEidasDateOfBirthAttribute(Attribute attribute) {

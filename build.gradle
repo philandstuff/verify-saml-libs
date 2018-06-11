@@ -20,9 +20,10 @@ subprojects {
         dropwizard_version = "1.2.0"
         ida_utils_version = '332'
         trust_anchor_version = '1.0-31'
+        build_version = "$opensaml_version-${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
     }
     group = "uk.gov.ida"
-    version = "$opensaml_version-${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
+    version = "$build_version"
 
     repositories {
         maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }

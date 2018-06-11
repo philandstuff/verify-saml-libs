@@ -38,8 +38,7 @@
                 BINTRAY_API_KEY = credentials('bintray-api-key')
             }
             steps {
-                sh './gradlew publish'
-                sh './gradlew :saml-serializers:bintrayUpload'
+                sh './gradlew publish bintrayUpload'
             }
         }
     }

@@ -33,9 +33,13 @@
                 // Artifactory credentials
                 ARTIUSER = "${env.ARTIFACTORYUSER}"
                 ARTIPASSWORD = "${env.ARTIFACTORYPASSWORD}"
+                // Bintray credentials
+                BINTRAY_USER    = 'richardtowers'
+                BINTRAY_API_KEY = credentials('bintray-api-key')
             }
             steps {
                 sh './gradlew publish'
+                sh './gradlew :saml-serializers:bintrayUpload'
             }
         }
     }

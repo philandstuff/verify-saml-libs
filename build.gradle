@@ -74,7 +74,7 @@ subprojects {
                 "uk.gov.ida.eidas:trust-anchor:$trust_anchor_version",
                 "uk.gov.ida:security-utils:2.0.0-$ida_utils_version"
 
-        test_deps 'uk.gov.ida:common-test-utils:2.0.0-41',
+        test_deps 'uk.gov.ida:common-test-utils:2.0.0-43',
                 "com.github.tomakehurst:wiremock-standalone:2.16.0",
                 "io.dropwizard:dropwizard-testing:$dropwizard_version",
                 'org.hamcrest:hamcrest-library:1.3',

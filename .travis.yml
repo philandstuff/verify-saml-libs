@@ -7,4 +7,5 @@ jdk:
   - openjdk8
 matrix:
   allow_failures:
+  - jdk: openjdk8
   - jdk: oraclejdk9

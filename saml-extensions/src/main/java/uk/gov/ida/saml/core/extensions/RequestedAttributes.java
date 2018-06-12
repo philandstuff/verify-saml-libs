@@ -22,4 +22,6 @@ public interface RequestedAttributes extends SAMLObject {
      * QName of the XSI type.
      */
     QName TYPE_NAME = new QName(IdaConstants.EIDAS_NS, TYPE_LOCAL_NAME, IdaConstants.EIDAS_PREFIX);
+
+    void addRequestedAttribute(RequestedAttribute requestedAttribute);
 }

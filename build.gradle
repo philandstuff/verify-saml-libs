@@ -2,7 +2,13 @@ apply from: 'publish.gradle'
 
 buildscript {
     repositories {
-        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        if (System.getenv('VERIFY_USE_PUBLIC_BINARIES') == 'true') {
+            logger.warn('Production builds MUST NOT be built with public binaries.\nUse artifactory/whitelisted-repos for production builds.\n\n')
+            jcenter()
+        }
+        else {
+            maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        }
     }
     dependencies {
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
@@ -18,15 +24,22 @@ subprojects {
     ext {
         opensaml_version = "3.3.0"
         dropwizard_version = "1.2.0"
-        ida_utils_version = '332'
-        trust_anchor_version = '1.0-31'
+        ida_utils_version = '335'
+        trust_anchor_version = '1.0-34'
         build_version = "$opensaml_version-${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
     }
     group = "uk.gov.ida"
     version = "$build_version"
 
     repositories {
-        maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        if (System.getenv('VERIFY_USE_PUBLIC_BINARIES') == 'true') {
+            logger.warn('Production builds MUST NOT be built with public binaries.\nUse artifactory/whitelisted-repos for production builds.\n\n')
+            maven { url 'https://dl.bintray.com/alphagov/maven-test' }
+            jcenter()
+        }
+        else {
+            maven { url 'https://artifactory.ida.digital.cabinet-office.gov.uk/artifactory/whitelisted-repos' }
+        }
     }
 
     configurations {
@@ -61,7 +74,7 @@ subprojects {
                 "uk.gov.ida.eidas:trust-anchor:$trust_anchor_version",
                 "uk.gov.ida:security-utils:2.0.0-$ida_utils_version"
 
-        test_deps 'uk.gov.ida:common-test-utils:2.0.0-41',
+        test_deps 'uk.gov.ida:common-test-utils:2.0.0-43',
                 "com.github.tomakehurst:wiremock-standalone:2.16.0",
                 "io.dropwizard:dropwizard-testing:$dropwizard_version",
                 'org.hamcrest:hamcrest-library:1.3',

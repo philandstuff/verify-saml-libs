@@ -1,6 +1,8 @@
 Verify SAML Libraries 📚
 ========================
 
+[![Build Status](https://travis-ci.org/alphagov/verify-saml-libs.svg?branch=master)](https://travis-ci.org/alphagov/verify-saml-libs)
+
 The individual SAML libraries used by Verify have been combined in this repository to make managing dependencies easier.
 
 Affected libraries:

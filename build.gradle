@@ -18,8 +18,8 @@ subprojects {
     ext {
         opensaml_version = "3.3.0"
         dropwizard_version = "1.2.0"
-        ida_utils_version = '332'
-        trust_anchor_version = '1.0-31'
+        ida_utils_version = '335'
+        trust_anchor_version = '1.0-34'
         build_version = "$opensaml_version-${System.env.BUILD_NUMBER ?: 'SNAPSHOT'}"
     }
     group = "uk.gov.ida"

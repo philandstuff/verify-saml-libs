@@ -8,7 +8,9 @@ import org.opensaml.saml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml.saml2.metadata.IDPSSODescriptor;
 import org.opensaml.saml.saml2.metadata.KeyDescriptor;
 import org.opensaml.saml.saml2.metadata.SPSSODescriptor;
+import org.opensaml.security.credential.Credential;
 import org.opensaml.xmlsec.signature.KeyInfo;
+import org.opensaml.xmlsec.signature.Signature;
 import org.opensaml.xmlsec.signature.X509Certificate;
 import org.opensaml.xmlsec.signature.X509Data;
 import org.opensaml.xmlsec.signature.support.SignatureException;
@@ -20,6 +22,7 @@ import uk.gov.ida.saml.core.test.builders.metadata.IdpSsoDescriptorBuilder;
 import uk.gov.ida.saml.core.test.builders.metadata.KeyDescriptorBuilder;
 import uk.gov.ida.saml.core.test.builders.metadata.KeyInfoBuilder;
 import uk.gov.ida.saml.core.test.builders.metadata.SPSSODescriptorBuilder;
+import uk.gov.ida.saml.core.test.builders.metadata.SignatureBuilder;
 import uk.gov.ida.saml.core.test.builders.metadata.X509CertificateBuilder;
 import uk.gov.ida.saml.core.test.builders.metadata.X509DataBuilder;
 
@@ -118,20 +121,36 @@ public class EntityDescriptorFactory {
     }
 
     public EntityDescriptor idpEntityDescriptor(String idpEntityId) {
-        KeyDescriptor keyDescriptor = buildKeyDescriptor(idpEntityId);
-        IDPSSODescriptor idpssoDescriptor = IdpSsoDescriptorBuilder.anIdpSsoDescriptor().addKeyDescriptor(keyDescriptor).withoutDefaultSigningKey().build();
         try {
-            return EntityDescriptorBuilder.anEntityDescriptor()
-                    .withEntityId(idpEntityId)
-                    .withIdpSsoDescriptor(idpssoDescriptor)
-                    .withValidUntil(DateTime.now().plusWeeks(2))
+            return getEntityDescriptorBuilder(idpEntityId)
                     .withSignature(null)
                     .withoutSigning()
-                    .setAddDefaultSpServiceDescriptor(false)
                     .build();
         } catch (MarshallingException | SignatureException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public EntityDescriptor signedIdpEntityDescriptor(String idpEntityId, Credential signingCredential) {
+        Signature signature = SignatureBuilder.aSignature().withX509Data(TestCertificateStrings.PUBLIC_SIGNING_CERTS.get(idpEntityId)).withSigningCredential(signingCredential).build();
+        try {
+            return getEntityDescriptorBuilder(idpEntityId)
+                    .withSignature(signature)
+                    .build();
+        } catch (MarshallingException | SignatureException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private EntityDescriptorBuilder getEntityDescriptorBuilder(String idpEntityId) {
+        KeyDescriptor keyDescriptor = buildKeyDescriptor(idpEntityId);
+        IDPSSODescriptor idpssoDescriptor = IdpSsoDescriptorBuilder.anIdpSsoDescriptor().addKeyDescriptor(keyDescriptor).withoutDefaultSigningKey().build();
+
+        return EntityDescriptorBuilder.anEntityDescriptor()
+                .withEntityId(idpEntityId)
+                .withIdpSsoDescriptor(idpssoDescriptor)
+                .withValidUntil(DateTime.now().plusWeeks(2))
+                .setAddDefaultSpServiceDescriptor(false);
     }
 
     public EntityDescriptor attributeAuthorityEntityDescriptor(String attributeAuthorityEntityId) {

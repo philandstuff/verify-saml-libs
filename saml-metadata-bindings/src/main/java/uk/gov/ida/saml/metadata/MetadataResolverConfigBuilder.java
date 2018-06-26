@@ -6,12 +6,8 @@ import uk.gov.ida.saml.metadata.exception.TrustAnchorConfigException;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -22,8 +18,10 @@ import static uk.gov.ida.saml.metadata.ResourceEncoder.entityIdAsResource;
 
 public class MetadataResolverConfigBuilder {
 
+    private KeyStoreLoader keyStoreLoader = new KeyStoreLoader();
+
     public MetadataResolverConfiguration createMetadataResolverConfiguration(JWK trustAnchor, EidasMetadataConfiguration configuration)
-            throws CertificateException, UnsupportedEncodingException {
+            throws CertificateException{
         return new TrustStoreBackedMetadataConfiguration(
                 fullUri(configuration.getMetadataSourceUri(), trustAnchor.getKeyID()),
                 configuration.getMinRefreshDelay(),
@@ -45,7 +43,7 @@ public class MetadataResolverConfigBuilder {
 
     private DynamicTrustStoreConfiguration trustStoreConfig(JWK trustAnchor) throws CertificateException {
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-        List<X509Certificate> certs = trustAnchor.getX509CertChain()
+        List<Certificate> certs = trustAnchor.getX509CertChain()
                 .stream()
                 .map(Base64::decode)
                 .map(ByteArrayInputStream::new)
@@ -58,19 +56,7 @@ public class MetadataResolverConfigBuilder {
                 })
                 .collect(Collectors.toList());
 
-        return new DynamicTrustStoreConfiguration(buildKeyStoreFromCertificate(certs));
-    }
-
-    private KeyStore buildKeyStoreFromCertificate(List<X509Certificate> certificates) {
-        try {
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            keyStore.load(null);
-            for(X509Certificate certificate : certificates) {
-                keyStore.setCertificateEntry("certificate-" + certificates.indexOf(certificate), certificate);
-            }
-            return keyStore;
-        } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
-            throw new TrustAnchorConfigException("Unable to build key store", e);
-        }
+        return new DynamicTrustStoreConfiguration(keyStoreLoader.load(certs));
     }
 }
+

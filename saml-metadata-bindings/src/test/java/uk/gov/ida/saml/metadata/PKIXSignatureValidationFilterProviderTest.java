@@ -28,6 +28,8 @@ import uk.gov.ida.saml.metadata.test.factories.metadata.TestCredentialFactory;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,19 +40,21 @@ import static java.util.Arrays.asList;
 public class PKIXSignatureValidationFilterProviderTest {
 
     private MetadataFactory metadataFactory = new MetadataFactory();
+    private static KeyStoreLoader keyStoreLoader = new KeyStoreLoader();
 
     private KeyStore trustStore;
     private SignatureValidationFilter signatureValidationFilter;
 
+
     private static KeyStore loadKeyStore(List<String> certificates) throws Exception {
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keyStore.load(null);
+        List<Certificate> certificateList = new ArrayList<>();
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         for (String certificate : certificates) {
             Certificate cert = certificateFactory.generateCertificate(IOUtils.toInputStream(certificate));
-            keyStore.setEntry(cert.toString(), new KeyStore.TrustedCertificateEntry(cert), new KeyStore.PasswordProtection(null));
+            certificateList.add(cert);
         }
-        return keyStore;
+
+        return keyStoreLoader.load(certificateList);
     }
 
     @Before

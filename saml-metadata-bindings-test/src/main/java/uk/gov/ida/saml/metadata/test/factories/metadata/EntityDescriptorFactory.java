@@ -125,17 +125,19 @@ public class EntityDescriptorFactory {
             return getEntityDescriptorBuilder(idpEntityId)
                     .withSignature(null)
                     .withoutSigning()
+                    .withValidUntil(DateTime.now().plusWeeks(2))
                     .build();
         } catch (MarshallingException | SignatureException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public EntityDescriptor signedIdpEntityDescriptor(String idpEntityId, Credential signingCredential) {
+    public EntityDescriptor signedIdpEntityDescriptor(String idpEntityId, Credential signingCredential, DateTime validUntil) {
         Signature signature = SignatureBuilder.aSignature().withX509Data(TestCertificateStrings.PUBLIC_SIGNING_CERTS.get(idpEntityId)).withSigningCredential(signingCredential).build();
         try {
             return getEntityDescriptorBuilder(idpEntityId)
                     .withSignature(signature)
+                    .withValidUntil(validUntil)
                     .build();
         } catch (MarshallingException | SignatureException e) {
             throw Throwables.propagate(e);
@@ -149,7 +151,6 @@ public class EntityDescriptorFactory {
         return EntityDescriptorBuilder.anEntityDescriptor()
                 .withEntityId(idpEntityId)
                 .withIdpSsoDescriptor(idpssoDescriptor)
-                .withValidUntil(DateTime.now().plusWeeks(2))
                 .setAddDefaultSpServiceDescriptor(false);
     }
 

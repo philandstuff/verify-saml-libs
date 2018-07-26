@@ -2,6 +2,7 @@ package uk.gov.ida.saml.security;
 
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
 import net.shibboleth.utilities.java.support.resolver.Criterion;
+import org.apache.xml.security.signature.XMLSignature;
 import org.opensaml.saml.common.SignableSAMLObject;
 import org.opensaml.saml.security.impl.SAMLSignatureProfileValidator;
 import org.opensaml.security.SecurityException;
@@ -39,7 +40,9 @@ public abstract class SignatureValidator {
 
                 SignatureConstants.ALGO_ID_DIGEST_SHA1,
                 SignatureConstants.ALGO_ID_DIGEST_SHA256,
-                SignatureConstants.ALGO_ID_DIGEST_SHA512
+                SignatureConstants.ALGO_ID_DIGEST_SHA512,
+
+                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1
         ));
         criteria.add(new SignatureValidationParametersCriterion(signatureValidationParameters));
 

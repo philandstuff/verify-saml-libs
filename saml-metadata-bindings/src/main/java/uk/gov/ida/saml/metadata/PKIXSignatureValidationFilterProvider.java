@@ -2,6 +2,7 @@ package uk.gov.ida.saml.metadata;
 
 import com.google.common.base.Throwables;
 import net.shibboleth.utilities.java.support.resolver.CriteriaSet;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.opensaml.saml.metadata.resolver.filter.impl.SignatureValidationFilter;
 import org.opensaml.security.x509.impl.BasicPKIXValidationInformation;
 import org.opensaml.xmlsec.SignatureValidationParameters;
@@ -17,6 +18,7 @@ import javax.inject.Provider;
 import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -25,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static org.apache.xml.security.signature.XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1;
 import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_DIGEST_SHA256;
 import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_DIGEST_SHA512;
 import static org.opensaml.xmlsec.signature.support.SignatureConstants.ALGO_ID_SIGNATURE_ECDSA_SHA256;
@@ -49,18 +52,19 @@ public class PKIXSignatureValidationFilterProvider implements Provider<Signature
             ALGO_ID_DIGEST_SHA512,
             ALGO_ID_SIGNATURE_ECDSA_SHA256,
             ALGO_ID_SIGNATURE_ECDSA_SHA384,
-            ALGO_ID_SIGNATURE_ECDSA_SHA512
+            ALGO_ID_SIGNATURE_ECDSA_SHA512,
+            ALGO_ID_SIGNATURE_RSA_SHA256_MGF1
     );
     private KeyStore metadataTrustStore;
 
     @Inject
     public PKIXSignatureValidationFilterProvider(@Named("metadataTruststore") KeyStore metadataTrustStore) {
+        Security.addProvider(new BouncyCastleProvider());
         this.metadataTrustStore = metadataTrustStore;
     }
 
     @Override
     public SignatureValidationFilter get() {
-
         ArrayList<String> aliases;
         BasicPKIXValidationInformation basicPKIXValidationInformation = null;
         try {

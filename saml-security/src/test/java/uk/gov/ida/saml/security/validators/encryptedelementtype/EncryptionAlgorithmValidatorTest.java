@@ -37,7 +37,9 @@ public class EncryptionAlgorithmValidatorTest {
     public void validate_shouldNotThrowSamlExceptionIfEncryptionAlgorithmIsWhitelisted() throws Exception {
         String algoIdBlockcipherAes256 = EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES256;
         Set whitelistedAlgos = ImmutableSet.of(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128, algoIdBlockcipherAes256);
-        validator = new EncryptionAlgorithmValidator(whitelistedAlgos);
+        Set whitelistedKeyTransportAlgos = ImmutableSet.of(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP, EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP11);
+
+        validator = new EncryptionAlgorithmValidator(whitelistedAlgos, whitelistedKeyTransportAlgos);
         validator.validate(createStandardEncryptedAssertion(algoIdBlockcipherAes256, EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP, true));
         validator.validate(createOtherTypeOfEncryptedAssertion(algoIdBlockcipherAes256, EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP));
     }
@@ -50,6 +52,16 @@ public class EncryptionAlgorithmValidatorTest {
         validateException(
                 SamlTransformationErrorFactory.unsupportedEncryptionAlgortithm(encryptionAlgorithm),
                 standardEncryptedAssertion);
+    }
+
+    @Test
+    public void validate_shouldNotThrowIfKeyTransportAlgorithmIsInWhitelist() throws Exception {
+        Set whitelistedAlgos = ImmutableSet.of(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128);
+        Set whiteListedKeyTransportAlgos = ImmutableSet.of(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15, EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP);
+
+        validator = new EncryptionAlgorithmValidator(whitelistedAlgos, whiteListedKeyTransportAlgos);
+        validator.validate(createStandardEncryptedAssertion(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128, EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15, true));
+        validator.validate(createOtherTypeOfEncryptedAssertion(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128, EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSA15));
     }
 
     @Test

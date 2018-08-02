@@ -12,13 +12,16 @@ import java.util.Set;
 
 public class EncryptionAlgorithmValidator {
     private final Set<String> algorithmWhitelist;
+    private final Set<String> keyTransportAlgorithmWhitelist;
 
     public EncryptionAlgorithmValidator() {
         this.algorithmWhitelist = ImmutableSet.of(EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128);
+        this.keyTransportAlgorithmWhitelist = ImmutableSet.of(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP);
     }
 
-    public EncryptionAlgorithmValidator(Set<String> algorithmWhitelist) {
+    public EncryptionAlgorithmValidator(Set<String> algorithmWhitelist, Set<String> keyTransportAlgorithmWhitelist) {
         this.algorithmWhitelist = algorithmWhitelist;
+        this.keyTransportAlgorithmWhitelist = keyTransportAlgorithmWhitelist;
     }
 
     public void validate(EncryptedElementType encryptedElement) {
@@ -39,7 +42,7 @@ public class EncryptionAlgorithmValidator {
         }
 
         final String keyTransportAlgorithm = encryptionMethod.getAlgorithm();
-        if (!keyTransportAlgorithm.equals(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP)) {
+        if (!keyTransportAlgorithmWhitelist.contains(keyTransportAlgorithm)) {
             SamlValidationSpecificationFailure failure = SamlTransformationErrorFactory.unsupportedKeyEncryptionAlgorithm(keyTransportAlgorithm);
             throw new SamlTransformationErrorException(failure.getErrorMessage(), failure.getLogLevel());
         }

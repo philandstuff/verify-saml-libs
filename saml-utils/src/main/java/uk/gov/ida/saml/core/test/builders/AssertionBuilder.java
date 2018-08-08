@@ -216,17 +216,27 @@ public class AssertionBuilder {
         return buildWithEncrypterCredential(createEncrypter(credential, encryptionAlgorithm));
     }
 
+    public EncryptedAssertion buildWithEncrypterCredential(Credential credential,
+                                                           String encryptionAlgorithm,
+                                                           String keyTransportEncryptionAlgorithm) {
+        return buildWithEncrypterCredential(createEncrypter(credential, encryptionAlgorithm, keyTransportEncryptionAlgorithm));
+    }
+
     public Encrypter createEncrypter(Credential credential) {
         return createEncrypter(credential, EncryptionConstants.ALGO_ID_BLOCKCIPHER_AES128);
     }
 
     public Encrypter createEncrypter(Credential credential, String encryptionAlgorithm) {
+        return createEncrypter(credential, encryptionAlgorithm, EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP);
+    }
+
+    public Encrypter createEncrypter(Credential credential, String encryptionAlgorithm, String keyTransportEncryptionAlgorithm) {
         DataEncryptionParameters encParams = new DataEncryptionParameters();
         encParams.setAlgorithm(encryptionAlgorithm);
 
         KeyEncryptionParameters kekParams = new KeyEncryptionParameters();
         kekParams.setEncryptionCredential(credential);
-        kekParams.setAlgorithm(EncryptionConstants.ALGO_ID_KEYTRANSPORT_RSAOAEP);
+        kekParams.setAlgorithm(keyTransportEncryptionAlgorithm);
 
         Encrypter encrypter = new Encrypter(encParams, kekParams);
         encrypter.setKeyPlacement(Encrypter.KeyPlacement.PEER);

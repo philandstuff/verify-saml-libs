@@ -42,7 +42,8 @@ public abstract class SignatureValidator {
                 SignatureConstants.ALGO_ID_DIGEST_SHA256,
                 SignatureConstants.ALGO_ID_DIGEST_SHA512,
 
-                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1
+                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256_MGF1,
+                XMLSignature.ALGO_ID_SIGNATURE_ECDSA_SHA256
         ));
         criteria.add(new SignatureValidationParametersCriterion(signatureValidationParameters));
 

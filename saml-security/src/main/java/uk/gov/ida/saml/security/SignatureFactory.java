@@ -23,7 +23,6 @@ public class SignatureFactory {
     private final DigestAlgorithm digestAlgorithm;
     private final boolean includeKeyInfo;
 
-
     public SignatureFactory(IdaKeyStoreCredentialRetriever keyStoreCredentialRetriever, SignatureAlgorithm signatureAlgorithm, DigestAlgorithm digestAlgorithm) {
         this(false, keyStoreCredentialRetriever, signatureAlgorithm, digestAlgorithm);
     }
@@ -42,9 +41,9 @@ public class SignatureFactory {
                 .getBuilder(Signature.DEFAULT_ELEMENT_NAME)
                 .buildObject(Signature.DEFAULT_ELEMENT_NAME);
 
-        if (includeKeyInfo && signingCertificate != null) {
+        if (includeKeyInfo) {
             if (signingCertificate == null) {
-                throw new IllegalStateException("Unable to generate key info without a signing certificate");
+                throw new SamlTransformationErrorException("Unable to generate key info without a signing certificate", Level.ERROR);
             }
             X509KeyInfoGeneratorFactory x509KeyInfoGeneratorFactory = new X509KeyInfoGeneratorFactory();
             x509KeyInfoGeneratorFactory.setEmitEntityCertificate(true);

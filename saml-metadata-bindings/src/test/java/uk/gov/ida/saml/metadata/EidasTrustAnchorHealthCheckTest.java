@@ -16,6 +16,7 @@ import org.opensaml.xmlsec.signature.support.SignatureException;
 import uk.gov.ida.saml.core.test.builders.metadata.EntityDescriptorBuilder;
 
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,10 +38,10 @@ public class EidasTrustAnchorHealthCheckTest {
     }
 
     @Test
-    public void shouldReturnUnhealthyWhenNoTrustAnchorsAreFound() {
+    public void shouldReturnHealthyWhenNoTrustAnchorsAreFound() {
         Result result = eidasTrustAnchorHealthCheck.check();
 
-        assertThat(result.isHealthy()).isFalse();
+        assertThat(result.isHealthy()).isTrue();
     }
 
     @Test
@@ -67,8 +68,8 @@ public class EidasTrustAnchorHealthCheckTest {
         Result result = eidasTrustAnchorHealthCheck.check();
 
         assertThat(result.isHealthy()).isFalse();
-        assertThat(result.getMessage()).contains(entityId2, entityId3);
-        assertThat(result.getMessage()).doesNotContain(entityId1);
+        assertThat(((Map<String, String>)result.getDetails().get("unresolvedMetadata")).keySet()).contains(entityId2, entityId3);
+        assertThat(((Map<String, String>)result.getDetails().get("unresolvedMetadata")).keySet()).doesNotContain(entityId1);
     }
 
     @Test
@@ -89,8 +90,8 @@ public class EidasTrustAnchorHealthCheckTest {
         Result result = eidasTrustAnchorHealthCheck.check();
 
         assertThat(result.isHealthy()).isFalse();
-        assertThat(result.getMessage()).contains(entityId2, entityId3);
-        assertThat(result.getMessage()).doesNotContain(entityId1);
+        assertThat((List<String>)result.getDetails().get("missingMetadataResolverEntityIds")).contains(entityId2, entityId3);
+        assertThat((List<String>)result.getDetails().get("missingMetadataResolverEntityIds")).doesNotContain(entityId1);
     }
 
     @Test

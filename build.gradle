@@ -35,6 +35,7 @@ subprojects {
         if (System.getenv('VERIFY_USE_PUBLIC_BINARIES') == 'true') {
             logger.warn('Production builds MUST NOT be built with public binaries.\nUse artifactory/whitelisted-repos for production builds.\n\n')
             maven { url 'https://dl.bintray.com/alphagov/maven-test' }
+            maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases' }
             jcenter()
         }
         else {

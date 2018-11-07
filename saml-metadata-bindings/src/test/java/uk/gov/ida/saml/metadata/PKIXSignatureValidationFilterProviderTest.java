@@ -6,7 +6,6 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import net.shibboleth.utilities.java.support.xml.BasicParserPool;
 import net.shibboleth.utilities.java.support.xml.XMLParserException;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensaml.core.xml.XMLObject;
@@ -19,6 +18,7 @@ import org.opensaml.xmlsec.algorithm.descriptors.DigestSHA256;
 import org.opensaml.xmlsec.algorithm.descriptors.SignatureRSAMD5;
 import org.opensaml.xmlsec.algorithm.descriptors.SignatureRSASHA256;
 import org.opensaml.xmlsec.signature.Signature;
+import uk.gov.ida.saml.core.IdaSamlBootstrap;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
 import uk.gov.ida.saml.core.test.builders.metadata.SignatureBuilder;
 import uk.gov.ida.saml.metadata.test.factories.metadata.EntitiesDescriptorFactory;
@@ -28,14 +28,11 @@ import uk.gov.ida.saml.metadata.test.factories.metadata.TestCredentialFactory;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class PKIXSignatureValidationFilterProviderTest {
 
@@ -59,6 +56,7 @@ public class PKIXSignatureValidationFilterProviderTest {
 
     @Before
     public void setUp() throws Exception {
+        IdaSamlBootstrap.bootstrap();
         trustStore = loadKeyStore(asList(CACertificates.TEST_METADATA_CA));
         signatureValidationFilter = new PKIXSignatureValidationFilterProvider(trustStore).get();
     }
@@ -67,32 +65,31 @@ public class PKIXSignatureValidationFilterProviderTest {
     public void shouldFailValidationIfKeystoreIsEmpty() throws Exception {
         trustStore = loadKeyStore(Collections.emptyList());
         signatureValidationFilter = new PKIXSignatureValidationFilterProvider(trustStore).get();
-        XMLObject metadata = validateMetadata(metadataFactory.defaultMetadata());
-        Assert.assertNull("Metadata should all be filtered out", metadata);
+        assertThatThrownBy(()-> validateMetadata(metadataFactory.defaultMetadata())).isInstanceOf(FilterException.class);
     }
 
     @Test
-    public void shouldFailToFilterMetadataWithNoSignature() throws Exception {
-        XMLObject metadata = validateMetadata(metadataFactory.unsignedMetadata());
-        Assert.assertNull("Metadata should all be filtered out", metadata);
+    public void shouldFailToFilterMetadataWithNoSignature() {
+        assertThatThrownBy(()-> validateMetadata(metadataFactory.unsignedMetadata())).isInstanceOf(FilterException.class);
     }
 
     @Test
     public void shouldSucceedLoadingValidMetadataAgainstCertificatesFromTheConfiguration() throws Exception {
         XMLObject metadata = validateMetadata(metadataFactory.defaultMetadata());
-        Assert.assertNotNull("Metadata should not be filtered out", metadata);
+        assertThat(metadata).isNotNull().withFailMessage("Metadata should not be filtered out");
     }
 
     @Test
     public void shouldSucceedLoadingValidMetadataWhenSignedWithAlternateCertificate() throws Exception {
         XMLObject metadata = validateMetadata(metadataFactory.signedMetadata(TestCertificateStrings.METADATA_SIGNING_B_PUBLIC_CERT, TestCertificateStrings.METADATA_SIGNING_B_PRIVATE_KEY));
-        Assert.assertNotNull("Metadata should not be filtered out", metadata);
+        assertThat(metadata).isNotNull().withFailMessage("Metadata should not be filtered out");
     }
 
     @Test
     public void shouldErrorLoadingInvalidMetadataWhenSignedWithCertificateIssuedByOtherCA() throws Exception {
-        XMLObject metadata = validateMetadata(metadataFactory.signedMetadata(TestCertificateStrings.HUB_TEST_PUBLIC_SIGNING_CERT, TestCertificateStrings.HUB_TEST_PRIVATE_SIGNING_KEY));
-        Assert.assertNull("Metadata should all be filtered out", metadata);
+        assertThatThrownBy(()-> {
+            validateMetadata(metadataFactory.signedMetadata(TestCertificateStrings.HUB_TEST_PUBLIC_SIGNING_CERT, TestCertificateStrings.HUB_TEST_PRIVATE_SIGNING_KEY));
+        }).isInstanceOf(FilterException.class);
     }
 
     @Test
@@ -103,7 +100,7 @@ public class PKIXSignatureValidationFilterProviderTest {
                 .withSigningCredential(new TestCredentialFactory(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT, TestCertificateStrings.METADATA_SIGNING_A_PRIVATE_KEY).getSigningCredential()).build();
 
         XMLObject metadata = validateMetadata(metadataFactory.metadata(new EntitiesDescriptorFactory().signedEntitiesDescriptor(signature)));
-        Assert.assertNotNull("Metadata should not be filtered out", metadata);
+        assertThat(metadata).isNotNull().withFailMessage("Metadata should not be filtered out");
     }
 
     @Test
@@ -112,8 +109,9 @@ public class PKIXSignatureValidationFilterProviderTest {
                 .withSignatureAlgorithm(new SignatureRSAMD5())
                 .withX509Data(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT)
                 .withSigningCredential(new TestCredentialFactory(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT, TestCertificateStrings.METADATA_SIGNING_A_PRIVATE_KEY).getSigningCredential()).build();
-        XMLObject metadata = validateMetadata(metadataFactory.metadata(new EntitiesDescriptorFactory().signedEntitiesDescriptor(signature)));
-        Assert.assertNull("Metadata should all be filtered out", metadata);
+        String metadataContent = metadataFactory.metadata(new EntitiesDescriptorFactory().signedEntitiesDescriptor(signature));
+
+        assertThatThrownBy(()-> validateMetadata(metadataContent)).isInstanceOf(FilterException.class);
     }
 
     @Test
@@ -126,7 +124,7 @@ public class PKIXSignatureValidationFilterProviderTest {
                 .withX509Data(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT)
                 .withSigningCredential(new TestCredentialFactory(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT, TestCertificateStrings.METADATA_SIGNING_A_PRIVATE_KEY).getSigningCredential()).build();
         XMLObject metadata = validateMetadata(metadataFactory.metadata(new EntitiesDescriptorFactory().signedEntitiesDescriptor(id, signature)));
-        Assert.assertNotNull("Metadata should not be filtered out", metadata);
+        assertThat(metadata).isNotNull().withFailMessage("Metadata should not be filtered out");
     }
 
     @Test
@@ -136,8 +134,9 @@ public class PKIXSignatureValidationFilterProviderTest {
                 .withDigestAlgorithm(id, new DigestMD5())
                 .withX509Data(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT)
                 .withSigningCredential(new TestCredentialFactory(TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT, TestCertificateStrings.METADATA_SIGNING_A_PRIVATE_KEY).getSigningCredential()).build();
-        XMLObject metadata = validateMetadata(metadataFactory.metadata(new EntitiesDescriptorFactory().signedEntitiesDescriptor(id, signature)));
-        Assert.assertNull("Metadata should all be filtered out", metadata);
+        String metadataContent = metadataFactory.metadata(new EntitiesDescriptorFactory().signedEntitiesDescriptor(id, signature));
+
+        assertThatThrownBy(()-> validateMetadata(metadataContent)).isInstanceOf(FilterException.class);
     }
 
     @Test
@@ -145,19 +144,20 @@ public class PKIXSignatureValidationFilterProviderTest {
         trustStore = loadKeyStore(asList(CACertificates.TEST_ROOT_CA));
         signatureValidationFilter = new PKIXSignatureValidationFilterProvider(trustStore).get();
 
-        XMLObject metadata = validateMetadata(metadataFactory.metadataWithFullCertificateChain(
+        String metadataContent = metadataFactory.metadataWithFullCertificateChain(
                 TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT,
                 Arrays.asList(
                         TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT,
                         createInlineCertificate(CACertificates.TEST_METADATA_CA)),
-                TestCertificateStrings.METADATA_SIGNING_A_PRIVATE_KEY));
-        Assert.assertNull("Metadata should all be filtered out", metadata);
+                TestCertificateStrings.METADATA_SIGNING_A_PRIVATE_KEY);
+
+        assertThatThrownBy(()-> validateMetadata(metadataContent)).isInstanceOf(FilterException.class);
     }
 
     @Test
-    public void shouldErrorLoadingInvalidMetadataAgainstCertificatesFromTheConfiguration() throws Exception {
-        XMLObject metadata = validateMetadata(metadataFactory.signedMetadata(TestCertificateStrings.UNCHAINED_PUBLIC_CERT, TestCertificateStrings.UNCHAINED_PRIVATE_KEY));
-        Assert.assertNull("Metadata should all be filtered out", metadata);
+    public void shouldErrorLoadingInvalidMetadataAgainstCertificatesFromTheConfiguration() {
+        String metadataContent = metadataFactory.signedMetadata(TestCertificateStrings.UNCHAINED_PUBLIC_CERT, TestCertificateStrings.UNCHAINED_PRIVATE_KEY);
+        assertThatThrownBy(()-> validateMetadata(metadataContent)).isInstanceOf(FilterException.class);
     }
 
     private XMLObject validateMetadata(String metadataContent) throws XMLParserException, UnmarshallingException, FilterException, ComponentInitializationException {

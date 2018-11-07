@@ -4,7 +4,7 @@ import net.shibboleth.utilities.java.support.component.ComponentInitializationEx
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.metadata.resolver.impl.PredicateRoleDescriptorResolver;
 import org.opensaml.saml.security.impl.MetadataCredentialResolver;
-import org.opensaml.xmlsec.config.DefaultSecurityConfigurationBootstrap;
+import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 
 public class CredentialResolverFactory {
     public MetadataCredentialResolver create(MetadataResolver metadataResolver) throws ComponentInitializationException {

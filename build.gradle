@@ -22,7 +22,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     ext {
-        opensaml_version = "3.3.0"
+        opensaml_version = "3.4.0"
         dropwizard_version = "1.3.5"
         ida_utils_version = '337'
         trust_anchor_version = '1.0-34'

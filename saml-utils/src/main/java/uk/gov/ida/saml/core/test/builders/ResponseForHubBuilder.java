@@ -10,6 +10,8 @@ import uk.gov.ida.saml.core.domain.TransactionIdaStatus;
 import uk.gov.ida.saml.core.test.TestEntityIds;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
@@ -26,7 +28,7 @@ public class ResponseForHubBuilder {
     private Optional<Signature> signature = null;
     private Optional<PassthroughAssertion> authnStatementAssertion = empty();
     private Optional<PassthroughAssertion> matchingDatasetAssertion = empty();
-    private Optional<String> matchingServiceAssertion = empty();
+    private List<String> encryptedAssertions = Collections.emptyList();
 
 
     public static ResponseForHubBuilder anAuthnResponse() {
@@ -68,7 +70,7 @@ public class ResponseForHubBuilder {
                 TestEntityIds.HUB_ENTITY_ID,
                 issueInstant,
                 transactionIdpStatus,
-                matchingServiceAssertion,
+                encryptedAssertions,
                 URI.create("blah"));
     }
 
@@ -118,8 +120,8 @@ public class ResponseForHubBuilder {
         return this;
     }
 
-    public ResponseForHubBuilder withMatchingServiceAssertion(String matchingServiceAssertion) {
-        this.matchingServiceAssertion = ofNullable(matchingServiceAssertion);
+    public ResponseForHubBuilder withEncryptedAssertions(List<String> encryptedAssertions) {
+        this.encryptedAssertions = encryptedAssertions;
         return this;
     }
 }

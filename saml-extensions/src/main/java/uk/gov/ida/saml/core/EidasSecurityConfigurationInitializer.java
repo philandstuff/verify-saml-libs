@@ -5,7 +5,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.opensaml.core.config.ConfigurationService;
 import org.opensaml.core.config.Initializer;
 import org.opensaml.xmlsec.SignatureValidationConfiguration;
-import org.opensaml.xmlsec.config.DefaultSecurityConfigurationBootstrap;
+import org.opensaml.xmlsec.config.impl.DefaultSecurityConfigurationBootstrap;
 import org.opensaml.xmlsec.impl.BasicSignatureValidationConfiguration;
 
 import java.security.Security;

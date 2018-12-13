@@ -22,7 +22,7 @@ subprojects {
     apply plugin: 'maven-publish'
 
     ext {
-        opensaml_version = "3.3.0"
+        opensaml_version = "3.4.0"
         dropwizard_version = "1.3.5"
         ida_utils_version = '337'
         trust_anchor_version = '1.0-34'
@@ -35,6 +35,7 @@ subprojects {
         if (System.getenv('VERIFY_USE_PUBLIC_BINARIES') == 'true') {
             logger.warn('Production builds MUST NOT be built with public binaries.\nUse artifactory/whitelisted-repos for production builds.\n\n')
             maven { url 'https://dl.bintray.com/alphagov/maven-test' }
+            maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases' }
             jcenter()
         }
         else {

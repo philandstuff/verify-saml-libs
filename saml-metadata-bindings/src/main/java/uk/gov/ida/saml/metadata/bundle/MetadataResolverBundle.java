@@ -7,6 +7,7 @@ import io.dropwizard.setup.Environment;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.saml.security.impl.MetadataCredentialResolver;
 import org.opensaml.xmlsec.signature.support.impl.ExplicitKeySignatureTrustEngine;
+import uk.gov.ida.saml.metadata.MetadataHealthCheck;
 import uk.gov.ida.saml.metadata.MetadataResolverConfiguration;
 import uk.gov.ida.saml.metadata.factories.CredentialResolverFactory;
 import uk.gov.ida.saml.metadata.factories.DropwizardMetadataResolverFactory;
@@ -38,6 +39,12 @@ public class MetadataResolverBundle<T extends Configuration> implements io.dropw
         metadataResolver = dropwizardMetadataResolverFactory.createMetadataResolver(environment, metadataConfiguration, validateSignatures);
         signatureTrustEngine = new MetadataSignatureTrustEngineFactory().createSignatureTrustEngine(metadataResolver);
         credentialResolver = new CredentialResolverFactory().create(metadataResolver);
+
+        MetadataHealthCheck healthCheck = new MetadataHealthCheck(
+            metadataResolver,
+            metadataConfiguration.getExpectedEntityId()
+        );
+        environment.healthChecks().register(metadataConfiguration.getUri().toString(), healthCheck);
     }
 
     @Override

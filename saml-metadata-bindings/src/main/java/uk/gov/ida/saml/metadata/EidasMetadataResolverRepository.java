@@ -153,6 +153,7 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
         Collection<String> errors = CountryTrustAnchor.findErrors(trustAnchor);
 
         if (!errors.isEmpty()) {
+            throwExceptionIfCertificateExpiredMessagePresent(errors);
             throw new Error(String.format("Managed to generate an invalid anchor: %s", String.join(", ", errors)));
         }
 
@@ -206,5 +207,12 @@ public class EidasMetadataResolverRepository implements MetadataResolverReposito
         private JerseyClientMetadataResolver getMetadataResolver() {
             return metadataResolver;
         }
+    }
+
+    private void throwExceptionIfCertificateExpiredMessagePresent(Collection<String> errors) throws CertificateException {
+        Optional<String> certExpiryErrorMessage = errors.stream()
+            .filter(message -> message.contains("X.509 certificate has expired"))
+            .findFirst();
+        if (certExpiryErrorMessage.isPresent()) throw new CertificateException(certExpiryErrorMessage.get());
     }
 }

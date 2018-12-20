@@ -32,6 +32,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -87,8 +88,8 @@ public class FederationMetadataBundleTest {
         @JsonProperty("metadata")
         private MultiTrustStoresBackedMetadataConfiguration metadataConfiguration;
 
-        public MetadataResolverConfiguration getMetadataConfiguration() {
-            return metadataConfiguration;
+        public Optional<MetadataResolverConfiguration> getMetadataConfiguration() {
+            return Optional.ofNullable(metadataConfiguration);
         }
     }
 

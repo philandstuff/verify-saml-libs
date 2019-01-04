@@ -1,6 +1,9 @@
 package uk.gov.ida.saml.metadata;
 
 import certificates.values.CACertificates;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import io.dropwizard.setup.Environment;
@@ -15,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.opensaml.saml.metadata.resolver.MetadataResolver;
 import org.opensaml.xmlsec.signature.support.impl.ExplicitKeySignatureTrustEngine;
+import org.slf4j.LoggerFactory;
 import uk.gov.ida.common.shared.security.X509CertificateFactory;
 import uk.gov.ida.eidas.trustanchor.CountryTrustAnchor;
 import uk.gov.ida.saml.core.test.TestCertificateStrings;
@@ -43,8 +47,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -116,7 +122,7 @@ public class EidasMetadataResolverRepositoryTest {
         );
 
         String entityId = "http://signin.gov.uk/entity/id";
-        JWK trustAnchor = createJWK(entityId, stringCertChain);
+        JWK trustAnchor = createJWK(entityId, stringCertChain, true);
         trustAnchors.add(trustAnchor);
 
         when(metadataConfiguration.getMetadataSourceUri()).thenReturn(UriBuilder.fromUri("https://source.com").build());
@@ -154,7 +160,7 @@ public class EidasMetadataResolverRepositoryTest {
                 TestCertificateStrings.STUB_COUNTRY_PUBLIC_TERTIARY_CERT
         );
 
-        JWK trustAnchor = createJWK(entityId, stringCertsChain);
+        JWK trustAnchor = createJWK(entityId, stringCertsChain, true);
         trustAnchors.add(trustAnchor);
 
         when(metadataConfiguration.getMetadataSourceUri()).thenReturn(UriBuilder.fromUri("https://source.com").build());
@@ -183,15 +189,51 @@ public class EidasMetadataResolverRepositoryTest {
     }
 
     @Test
-    public void shouldNotCreateMetadataResolverWhenCertificateIsInvalid() {
+    public void shouldNotCreateMetadataResolverAndLogWhenCertificateIsExpired() {
+        Appender mockAppender = mock(Appender.class);
+        Logger logger = (Logger) LoggerFactory.getLogger(EidasMetadataResolverRepository.class);
+        logger.addAppender(mockAppender);
+        ArgumentCaptor<LoggingEvent> loggingEventCaptor = ArgumentCaptor.forClass(LoggingEvent.class);
+
+        when(metadataConfiguration.getMetadataSourceUri()).thenReturn(UriBuilder.fromUri("https://source.com").build());
         String entityId = "http://signin.gov.uk/entity-id";
         List<String> certificateChain = asList(
-                CACertificates.TEST_ROOT_CA,
-                CACertificates.TEST_METADATA_CA,
-                TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT
+            CACertificates.TEST_ROOT_CA,
+            CACertificates.TEST_IDP_CA,
+            TestCertificateStrings.STUB_COUNTRY_PUBLIC_EXPIRED_CERT
         );
-        trustAnchors.add(createJWK(entityId, certificateChain));
+        trustAnchors.add(createJWK(entityId, certificateChain, false));
+
         EidasMetadataResolverRepository metadataResolverRepository = new EidasMetadataResolverRepository(
+            trustAnchorResolver,
+            metadataConfiguration,
+            dropwizardMetadataResolverFactory,
+            timer,
+            metadataSignatureTrustEngineFactory,
+            new MetadataResolverConfigBuilder(),
+            metadataClient);
+
+        assertThat(metadataResolverRepository.getMetadataResolver(entityId)).isEmpty();
+        assertThat(metadataResolverRepository.getSignatureTrustEngine(entityId)).isEmpty();
+        verify(mockAppender).doAppend(loggingEventCaptor.capture());
+        assertThat(loggingEventCaptor.getValue().getMessage())
+            .contains(String.format("Error creating MetadataResolver for %s", entityId));
+    }
+
+    @Test
+    public void shouldNotCreateMetadataResolverRepositoryWhenCertificateIsInvalid() {
+        when(metadataConfiguration.getMetadataSourceUri()).thenReturn(UriBuilder.fromUri("https://source.com").build());
+        String entityId = "http://signin.gov.uk/entity-id";
+        List<String> invalidCertChain = asList(
+                CACertificates.TEST_ROOT_CA,
+                CACertificates.TEST_IDP_CA,
+                TestCertificateStrings.STUB_COUNTRY_PUBLIC_NOT_YET_VALID_CERT
+        );
+        trustAnchors.add(createJWK(entityId, invalidCertChain, false));
+
+        EidasMetadataResolverRepository metadataResolverRepository = null;
+        try {
+            metadataResolverRepository = new EidasMetadataResolverRepository(
                 trustAnchorResolver,
                 metadataConfiguration,
                 dropwizardMetadataResolverFactory,
@@ -199,9 +241,12 @@ public class EidasMetadataResolverRepositoryTest {
                 metadataSignatureTrustEngineFactory,
                 new MetadataResolverConfigBuilder(),
                 metadataClient);
+            fail("EidasMetadataResolverRepository should throw an error with an invalid cert in the trust anchor");
+        } catch (Error e) {
+            assertThat(e.getMessage()).startsWith("Managed to generate an invalid anchor: Certificate CN=IDA Stub Country Signing Dev");
+        }
 
-        assertThat(metadataResolverRepository.getMetadataResolver(entityId)).isEmpty();
-        assertThat(metadataResolverRepository.getSignatureTrustEngine(entityId)).isEmpty();
+        assertThat(metadataResolverRepository).isNull();
     }
 
     @Test
@@ -215,7 +260,7 @@ public class EidasMetadataResolverRepositoryTest {
                 CACertificates.TEST_METADATA_CA,
                 TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT
         );
-        JWK trustAnchor1 = createJWK("http://signin.gov.uk/entity/id", certificateChain);
+        JWK trustAnchor1 = createJWK("http://signin.gov.uk/entity/id", certificateChain, true);
         when(trustAnchorResolver.getTrustAnchors()).thenReturn(singletonList(trustAnchor1));
         metadataResolverRepository.refresh();
 
@@ -229,8 +274,8 @@ public class EidasMetadataResolverRepositoryTest {
                 CACertificates.TEST_METADATA_CA,
                 TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT
         );
-        JWK trustAnchor1 = createJWK("http://signin.gov.uk/entity/id", certificateChain);
-        JWK trustAnchor2 = createJWK("http://signin.gov.uk/entity/id", certificateChain);
+        JWK trustAnchor1 = createJWK("http://signin.gov.uk/entity/id", certificateChain,true);
+        JWK trustAnchor2 = createJWK("http://signin.gov.uk/entity/id", certificateChain,true);
 
         EidasMetadataResolverRepository metadataResolverRepository = createMetadataResolverRepositoryWithTrustAnchors(trustAnchor1, trustAnchor2);
 
@@ -250,7 +295,7 @@ public class EidasMetadataResolverRepositoryTest {
                 CACertificates.TEST_METADATA_CA,
                 TestCertificateStrings.METADATA_SIGNING_A_PUBLIC_CERT
         );
-        EidasMetadataResolverRepository metadataResolverRepository = createMetadataResolverRepositoryWithTrustAnchors(createJWK("http://signin.gov.uk/entity/id", certificateChain));
+        EidasMetadataResolverRepository metadataResolverRepository = createMetadataResolverRepositoryWithTrustAnchors(createJWK("http://signin.gov.uk/entity/id", certificateChain, true));
 
         Map<String, MetadataResolver> originalMetadataResolvers = metadataResolverRepository.getMetadataResolvers();
         reset(dropwizardMetadataResolverFactory);
@@ -274,8 +319,9 @@ public class EidasMetadataResolverRepositoryTest {
                 metadataClient);
     }
 
-    private JWK createJWK(String entityId, List<String> certificates) {
+    private JWK createJWK(String entityId, List<String> certificates, Boolean validate) {
         List<X509Certificate> certs = certificates.stream().map(certificateFactory::createCertificate).collect(Collectors.toList());
-        return CountryTrustAnchor.make(certs, entityId);
+        return CountryTrustAnchor.make(certs, entityId, validate);
     }
+
 }

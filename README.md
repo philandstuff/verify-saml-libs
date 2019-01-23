@@ -1,7 +1,7 @@
 Verify SAML Libraries 📚
 ========================
 
-[![Build Status](https://deployer.tools.signin.service.gov.uk/api/v1/pipelines/continuously-deploy/jobs/build-verify-saml-libs/badge)](https://deployer.tools.signin.service.gov.uk/teams/main/pipelines/continuously-deploy/jobs/build-verify-saml-libs)
+[![Build Status](https://deployer.tools.signin.service.gov.uk/api/v1/teams/main/pipelines/continuously-deploy/jobs/build-verify-saml-libs/badge)](https://deployer.tools.signin.service.gov.uk/teams/main/pipelines/continuously-deploy/jobs/build-verify-saml-libs/builds/latest)
 
 The individual SAML libraries used by Verify have been combined in this repository to make managing dependencies easier.
 

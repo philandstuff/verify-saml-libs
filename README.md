@@ -1,7 +1,7 @@
 Verify SAML Libraries 📚
 ========================
 
-[![Build Status](https://travis-ci.org/alphagov/verify-saml-libs.svg?branch=master)](https://travis-ci.org/alphagov/verify-saml-libs)
+[![Build Status](https://deployer.tools.signin.service.gov.uk/api/v1/pipelines/continuously-deploy/jobs/build-verify-saml-libs/badge)](https://deployer.tools.signin.service.gov.uk/teams/main/pipelines/continuously-deploy/jobs/build-verify-saml-libs)
 
 The individual SAML libraries used by Verify have been combined in this repository to make managing dependencies easier.
 

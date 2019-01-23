@@ -18,7 +18,7 @@ public enum DetailedStatusCode {
     RequesterErrorRequestDeniedFromIdp(StatusCode.REQUESTER,StatusCode.REQUEST_DENIED),
     RequesterErrorFromIdpAsSentByHub(StatusCode.RESPONDER, StatusCode.REQUESTER),
     Healthy(StatusCode.SUCCESS, SamlStatusCode.HEALTHY),
-    UnknownUserCreateFailure(StatusCode.RESPONDER),
+    UnknownUserCreateFailure(StatusCode.RESPONDER, SamlStatusCode.CREATE_FAILURE),
     UnknownUserNoAttributeFailure(StatusCode.RESPONDER),
     UnknownUserCreateSuccess(StatusCode.SUCCESS, SamlStatusCode.CREATED);
 
